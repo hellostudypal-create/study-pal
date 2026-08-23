@@ -3,9 +3,11 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { assembleExamQuiz } from "@/lib/quiz-assembly";
+import { assertEntitled } from "@/lib/authz";
 
 const bodySchema = z.object({
   count: z.number().int().min(1).max(50).default(10),
+  bankId: z.string().uuid().optional(),
 });
 
 export async function POST(req: Request) {
@@ -15,8 +17,13 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(body);
   const count = parsed.success ? parsed.data.count : 10;
+  const bankId = parsed.success ? parsed.data.bankId : undefined;
 
-  const questions = await assembleExamQuiz(userId, count);
+  if (bankId && !(await assertEntitled(userId, bankId))) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const questions = await assembleExamQuiz(userId, count, bankId);
   if (questions.length === 0) {
     return NextResponse.json(
       { error: "No questions yet — add some first." },

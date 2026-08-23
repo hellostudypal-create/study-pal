@@ -41,7 +41,7 @@ export default function ExamQuizPage() {
     const res = await fetch(`/api/quiz/${quizId}/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quizItemId: item.quizItemId, wasCorrect }),
+      body: JSON.stringify({ quizItemId: item.quizItemId, kind: "self_assessed", wasCorrect }),
     });
     const data = await res.json();
     if (res.ok) setPoints((p) => p + data.pointsAwarded);

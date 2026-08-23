@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import type { VocabWord, ExamQuestion } from "@prisma/client";
+import { getEntitledBankIds } from "@/lib/authz";
 
 function assembleIds<T extends { id: string }>(
   due: T[],
@@ -36,39 +37,47 @@ function assembleIds<T extends { id: string }>(
   return picked;
 }
 
-export async function assembleVocabQuiz(userId: string, count: number): Promise<VocabWord[]> {
+async function resolveBankFilter(userId: string, kind: "exam" | "vocab", bankId?: string) {
+  if (bankId) return { in: [bankId] };
+  const bankIds = await getEntitledBankIds(userId, kind);
+  return { in: bankIds };
+}
+
+export async function assembleVocabQuiz(userId: string, count: number, bankId?: string): Promise<VocabWord[]> {
   const now = new Date();
+  const bankFilter = await resolveBankFilter(userId, "vocab", bankId);
   const due = await db.vocabWord.findMany({
-    where: { userId, nextReviewAt: { lte: now }, timesSeen: { gt: 0 } },
+    where: { bankId: bankFilter, nextReviewAt: { lte: now }, timesSeen: { gt: 0 } },
     orderBy: { nextReviewAt: "asc" },
     take: count,
   });
   const neverSeen = await db.vocabWord.findMany({
-    where: { userId, timesSeen: 0 },
+    where: { bankId: bankFilter, timesSeen: 0 },
     orderBy: { createdAt: "asc" },
     take: count,
   });
   const fallbackRandom = await db.vocabWord.findMany({
-    where: { userId },
+    where: { bankId: bankFilter },
     take: count * 2,
   });
   return assembleIds(due, neverSeen, fallbackRandom, count);
 }
 
-export async function assembleExamQuiz(userId: string, count: number): Promise<ExamQuestion[]> {
+export async function assembleExamQuiz(userId: string, count: number, bankId?: string): Promise<ExamQuestion[]> {
   const now = new Date();
+  const bankFilter = await resolveBankFilter(userId, "exam", bankId);
   const due = await db.examQuestion.findMany({
-    where: { userId, nextReviewAt: { lte: now }, timesSeen: { gt: 0 } },
+    where: { bankId: bankFilter, nextReviewAt: { lte: now }, timesSeen: { gt: 0 } },
     orderBy: { nextReviewAt: "asc" },
     take: count,
   });
   const neverSeen = await db.examQuestion.findMany({
-    where: { userId, timesSeen: 0 },
+    where: { bankId: bankFilter, timesSeen: 0 },
     orderBy: { createdAt: "asc" },
     take: count,
   });
   const fallbackRandom = await db.examQuestion.findMany({
-    where: { userId },
+    where: { bankId: bankFilter },
     take: count * 2,
   });
   return assembleIds(due, neverSeen, fallbackRandom, count);
@@ -79,10 +88,12 @@ export async function assembleExamQuiz(userId: string, count: number): Promise<E
 export async function pickDistractors(
   userId: string,
   excludeId: string,
-  count = 3
+  count = 3,
+  bankId?: string
 ): Promise<string[] | null> {
+  const bankFilter = await resolveBankFilter(userId, "vocab", bankId);
   const others = await db.vocabWord.findMany({
-    where: { userId, id: { not: excludeId }, definition: { not: null } },
+    where: { bankId: bankFilter, id: { not: excludeId }, definition: { not: null } },
     select: { definition: true },
   });
   const pool = others.map((o) => o.definition!).filter(Boolean);

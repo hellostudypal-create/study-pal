@@ -3,6 +3,7 @@ import { unlink } from "fs/promises";
 import path from "path";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { loadExamQuestionForEdit } from "@/lib/authz";
 
 const UPLOAD_ROOT = path.join(process.cwd(), "uploads", "questions");
 
@@ -14,8 +15,8 @@ export async function DELETE(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, imageId } = await params;
-  const question = await db.examQuestion.findUnique({ where: { id } });
-  if (!question || question.userId !== userId) {
+  const question = await loadExamQuestionForEdit(userId, id);
+  if (!question) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

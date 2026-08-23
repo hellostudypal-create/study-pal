@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { loadExamQuestionForEdit, loadExamQuestionForRead } from "@/lib/authz";
 
 const UPLOAD_ROOT = path.join(process.cwd(), "uploads", "questions");
 const ALLOWED_TYPES: Record<string, string> = {
@@ -13,12 +14,6 @@ const ALLOWED_TYPES: Record<string, string> = {
 };
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB per image
 
-async function assertOwnedQuestion(userId: string, id: string) {
-  const question = await db.examQuestion.findUnique({ where: { id } });
-  if (!question || question.userId !== userId) return null;
-  return question;
-}
-
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -27,7 +22,7 @@ export async function POST(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const question = await assertOwnedQuestion(userId, id);
+  const question = await loadExamQuestionForEdit(userId, id);
   if (!question) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const form = await req.formData().catch(() => null);
@@ -81,7 +76,7 @@ export async function GET(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const question = await assertOwnedQuestion(userId, id);
+  const question = await loadExamQuestionForRead(userId, id);
   if (!question) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const images = await db.questionImage.findMany({

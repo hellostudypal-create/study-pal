@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { getEntitledBankIds } from "@/lib/authz";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,21 +26,20 @@ export default async function QuestionsListPage({
   const category = params.category?.trim() || undefined;
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
 
-  const where = userId
-    ? {
-        userId,
-        ...(language ? { language } : {}),
-        ...(category ? { category } : {}),
-        ...(q
-          ? {
-              OR: [
-                { questionText: { contains: q, mode: "insensitive" as const } },
-                { answerText: { contains: q, mode: "insensitive" as const } },
-              ],
-            }
-          : {}),
-      }
-    : { userId: "" };
+  const bankIds = userId ? await getEntitledBankIds(userId, "exam") : [];
+  const where = {
+    bankId: { in: bankIds },
+    ...(language ? { language } : {}),
+    ...(category ? { category } : {}),
+    ...(q
+      ? {
+          OR: [
+            { questionText: { contains: q, mode: "insensitive" as const } },
+            { answerText: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
 
   const [questions, total, categories, totalUnfiltered] = userId
     ? await Promise.all([
@@ -52,12 +52,12 @@ export default async function QuestionsListPage({
         }),
         db.examQuestion.count({ where }),
         db.examQuestion.findMany({
-          where: { userId, category: { not: null } },
+          where: { bankId: { in: bankIds }, category: { not: null } },
           select: { category: true },
           distinct: ["category"],
           orderBy: { category: "asc" },
         }),
-        db.examQuestion.count({ where: { userId } }),
+        db.examQuestion.count({ where: { bankId: { in: bankIds } } }),
       ])
     : [[], 0, [], 0];
 

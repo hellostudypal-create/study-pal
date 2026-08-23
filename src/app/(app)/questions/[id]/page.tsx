@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { loadExamQuestionForEdit } from "@/lib/authz";
 import { QuestionForm } from "@/components/questions/QuestionForm";
 import { QuestionImages } from "@/components/questions/QuestionImages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,9 +13,9 @@ export default async function EditQuestionPage({
 }) {
   const { id } = await params;
   const userId = await getCurrentUserId();
-  const question = userId ? await db.examQuestion.findUnique({ where: { id } }) : null;
+  const question = userId ? await loadExamQuestionForEdit(userId, id) : null;
 
-  if (!question || question.userId !== userId) {
+  if (!question) {
     notFound();
   }
 

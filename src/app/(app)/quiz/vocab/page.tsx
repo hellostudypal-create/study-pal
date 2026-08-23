@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { McqCard, type McqItem } from "@/components/quiz/McqCard";
+import { McqCard, type McqItem, type McqAnswerResult } from "@/components/quiz/McqCard";
 
 export default function VocabQuizPage() {
   const router = useRouter();
@@ -36,12 +36,12 @@ export default function VocabQuizPage() {
     setPhase("taking");
   }
 
-  async function handleAnswered(wasCorrect: boolean) {
+  async function handleAnswered(result: McqAnswerResult) {
     const item = items[index];
     const res = await fetch(`/api/quiz/${quizId}/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quizItemId: item.quizItemId, wasCorrect }),
+      body: JSON.stringify({ quizItemId: item.quizItemId, ...result }),
     });
     const data = await res.json();
     if (res.ok) setPoints((p) => p + data.pointsAwarded);

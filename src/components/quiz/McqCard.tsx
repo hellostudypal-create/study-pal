@@ -14,6 +14,10 @@ export interface McqItem {
   correctAnswer: string | null;
 }
 
+export type McqAnswerResult =
+  | { kind: "verified_choice"; selectedAnswer: string }
+  | { kind: "self_assessed"; wasCorrect: boolean };
+
 export function McqCard({
   item,
   index,
@@ -23,7 +27,7 @@ export function McqCard({
   item: McqItem;
   index: number;
   total: number;
-  onAnswered: (wasCorrect: boolean) => void;
+  onAnswered: (result: McqAnswerResult) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [typed, setTyped] = useState("");
@@ -37,12 +41,11 @@ export function McqCard({
 
   function handleTypedSubmit(wasCorrect: boolean) {
     setRevealed(true);
-    setTimeout(() => onAnswered(wasCorrect), 900);
+    setTimeout(() => onAnswered({ kind: "self_assessed", wasCorrect }), 900);
   }
 
   function handleContinue() {
-    const wasCorrect = selected === item.correctAnswer;
-    onAnswered(wasCorrect);
+    onAnswered({ kind: "verified_choice", selectedAnswer: selected! });
   }
 
   return (

@@ -3,6 +3,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { assertEntitled } from "@/lib/authz";
 
 const UPLOAD_ROOT = path.join(process.cwd(), "uploads", "questions");
 
@@ -32,7 +33,11 @@ export async function GET(
   }
 
   const question = await db.examQuestion.findUnique({ where: { id: questionId } });
-  if (!question || question.userId !== userId) {
+  if (!question) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const entitled = await assertEntitled(userId, question.bankId);
+  if (!entitled) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

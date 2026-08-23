@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { assertCanEditBank, getEntitledBankIds, getOrCreatePersonalBank } from "@/lib/authz";
 
 const createSchema = z.object({
   questionText: z.string().min(1).max(4000),
@@ -9,6 +10,7 @@ const createSchema = z.object({
   language: z.enum(["en", "si"]).default("en"),
   category: z.string().max(200).optional(),
   correctOptionLabel: z.string().max(10).optional(),
+  bankId: z.string().uuid().optional(),
 });
 
 export async function GET(req: Request) {
@@ -19,10 +21,14 @@ export async function GET(req: Request) {
   const q = searchParams.get("q")?.trim();
   const language = searchParams.get("language");
   const category = searchParams.get("category")?.trim();
+  const bankId = searchParams.get("bankId")?.trim();
+
+  const entitledBankIds = await getEntitledBankIds(userId, "exam");
+  const bankFilter = bankId && entitledBankIds.includes(bankId) ? [bankId] : entitledBankIds;
 
   const questions = await db.examQuestion.findMany({
     where: {
-      userId,
+      bankId: { in: bankFilter },
       ...(language === "en" || language === "si" ? { language } : {}),
       ...(category ? { category } : {}),
       ...(q
@@ -53,8 +59,14 @@ export async function POST(req: Request) {
     );
   }
 
+  const { bankId: requestedBankId, ...data } = parsed.data;
+  const bankId = requestedBankId ?? (await getOrCreatePersonalBank(userId, "exam")).id;
+
+  const bank = await assertCanEditBank(userId, bankId);
+  if (!bank) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   const question = await db.examQuestion.create({
-    data: { ...parsed.data, userId },
+    data: { ...data, bankId },
   });
 
   return NextResponse.json({ question }, { status: 201 });

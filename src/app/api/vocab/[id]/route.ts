@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { loadVocabWordForEdit, loadVocabWordForRead } from "@/lib/authz";
 
 const updateSchema = z.object({
   term: z.string().min(1).max(200).optional(),
@@ -9,12 +10,6 @@ const updateSchema = z.object({
   exampleSentence: z.string().max(2000).nullable().optional(),
   sourceBook: z.string().max(300).nullable().optional(),
 });
-
-async function loadOwnedWord(userId: string, id: string) {
-  const word = await db.vocabWord.findUnique({ where: { id } });
-  if (!word || word.userId !== userId) return null;
-  return word;
-}
 
 export async function GET(
   _req: Request,
@@ -24,7 +19,7 @@ export async function GET(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const word = await loadOwnedWord(userId, id);
+  const word = await loadVocabWordForRead(userId, id);
   if (!word) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json({ word });
@@ -38,7 +33,7 @@ export async function PATCH(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await loadOwnedWord(userId, id);
+  const existing = await loadVocabWordForEdit(userId, id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await req.json().catch(() => null);
@@ -66,7 +61,7 @@ export async function DELETE(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await loadOwnedWord(userId, id);
+  const existing = await loadVocabWordForEdit(userId, id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.vocabWord.delete({ where: { id } });
