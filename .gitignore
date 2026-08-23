@@ -8,3 +8,4 @@ uploads/*
 .DS_Store
 samples/
 .claude/settings.local.json
+*.tsbuildinfo

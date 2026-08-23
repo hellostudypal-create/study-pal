@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth, getCurrentUserId } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getEntitledBankIds } from "@/lib/authz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -10,12 +11,18 @@ export default async function DashboardPage() {
   const now = new Date();
 
   const [vocabCount, questionCount, vocabDue, examDue] = userId
-    ? await Promise.all([
-        db.vocabWord.count({ where: { userId } }),
-        db.examQuestion.count({ where: { userId } }),
-        db.vocabWord.count({ where: { userId, nextReviewAt: { lte: now } } }),
-        db.examQuestion.count({ where: { userId, nextReviewAt: { lte: now } } }),
-      ])
+    ? await (async () => {
+        const [vocabBankIds, examBankIds] = await Promise.all([
+          getEntitledBankIds(userId, "vocab"),
+          getEntitledBankIds(userId, "exam"),
+        ]);
+        return Promise.all([
+          db.vocabWord.count({ where: { bankId: { in: vocabBankIds } } }),
+          db.examQuestion.count({ where: { bankId: { in: examBankIds } } }),
+          db.vocabWord.count({ where: { bankId: { in: vocabBankIds }, nextReviewAt: { lte: now } } }),
+          db.examQuestion.count({ where: { bankId: { in: examBankIds }, nextReviewAt: { lte: now } } }),
+        ]);
+      })()
     : [0, 0, 0, 0];
 
   const dueTotal = vocabDue + examDue;

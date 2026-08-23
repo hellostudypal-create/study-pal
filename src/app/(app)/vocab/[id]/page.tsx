@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { loadVocabWordForEdit } from "@/lib/authz";
 import { WordForm } from "@/components/vocab/WordForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -11,9 +12,9 @@ export default async function EditWordPage({
 }) {
   const { id } = await params;
   const userId = await getCurrentUserId();
-  const word = userId ? await db.vocabWord.findUnique({ where: { id } }) : null;
+  const word = userId ? await loadVocabWordForEdit(userId, id) : null;
 
-  if (!word || word.userId !== userId) {
+  if (!word) {
     notFound();
   }
 

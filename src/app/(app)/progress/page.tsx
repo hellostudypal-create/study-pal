@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { getEntitledBankIds } from "@/lib/authz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function computeStreak(dates: Date[]): number {
@@ -28,6 +29,11 @@ export default async function ProgressPage() {
 
   const now = new Date();
 
+  const [vocabBankIds, examBankIds] = await Promise.all([
+    getEntitledBankIds(userId, "vocab"),
+    getEntitledBankIds(userId, "exam"),
+  ]);
+
   const [
     vocabByBox,
     examByBox,
@@ -37,13 +43,13 @@ export default async function ProgressPage() {
     vocabAgg,
     examAgg,
   ] = await Promise.all([
-    db.vocabWord.groupBy({ by: ["boxLevel"], where: { userId }, _count: true }),
-    db.examQuestion.groupBy({ by: ["boxLevel"], where: { userId }, _count: true }),
-    db.vocabWord.count({ where: { userId, nextReviewAt: { lte: now } } }),
-    db.examQuestion.count({ where: { userId, nextReviewAt: { lte: now } } }),
+    db.vocabWord.groupBy({ by: ["boxLevel"], where: { bankId: { in: vocabBankIds } }, _count: true }),
+    db.examQuestion.groupBy({ by: ["boxLevel"], where: { bankId: { in: examBankIds } }, _count: true }),
+    db.vocabWord.count({ where: { bankId: { in: vocabBankIds }, nextReviewAt: { lte: now } } }),
+    db.examQuestion.count({ where: { bankId: { in: examBankIds }, nextReviewAt: { lte: now } } }),
     db.quiz.findMany({ where: { userId, completedAt: { not: null } }, select: { completedAt: true, pointsEarned: true } }),
-    db.vocabWord.aggregate({ where: { userId }, _sum: { timesSeen: true, timesCorrect: true } }),
-    db.examQuestion.aggregate({ where: { userId }, _sum: { timesSeen: true, timesCorrect: true } }),
+    db.vocabWord.aggregate({ where: { bankId: { in: vocabBankIds } }, _sum: { timesSeen: true, timesCorrect: true } }),
+    db.examQuestion.aggregate({ where: { bankId: { in: examBankIds } }, _sum: { timesSeen: true, timesCorrect: true } }),
   ]);
 
   const totalPoints = completedQuizzes.reduce((sum, q) => sum + q.pointsEarned, 0);

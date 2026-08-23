@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { getEntitledBankIds } from "@/lib/authz";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,19 +19,18 @@ export default async function VocabListPage({
   const q = params.q?.trim() ?? "";
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
 
-  const where = userId
-    ? {
-        userId,
-        ...(q
-          ? {
-              OR: [
-                { term: { contains: q, mode: "insensitive" as const } },
-                { definition: { contains: q, mode: "insensitive" as const } },
-              ],
-            }
-          : {}),
-      }
-    : { userId: "" };
+  const bankIds = userId ? await getEntitledBankIds(userId, "vocab") : [];
+  const where = {
+    bankId: { in: bankIds },
+    ...(q
+      ? {
+          OR: [
+            { term: { contains: q, mode: "insensitive" as const } },
+            { definition: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
 
   const [words, total, totalUnfiltered] = userId
     ? await Promise.all([
@@ -41,7 +41,7 @@ export default async function VocabListPage({
           take: PAGE_SIZE,
         }),
         db.vocabWord.count({ where }),
-        db.vocabWord.count({ where: { userId } }),
+        db.vocabWord.count({ where: { bankId: { in: bankIds } } }),
       ])
     : [[], 0, 0];
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { loadExamQuestionForEdit, loadExamQuestionForRead } from "@/lib/authz";
 
 const updateSchema = z.object({
   questionText: z.string().min(1).max(4000).optional(),
@@ -11,12 +12,6 @@ const updateSchema = z.object({
   correctOptionLabel: z.string().max(10).nullable().optional(),
 });
 
-async function loadOwnedQuestion(userId: string, id: string) {
-  const question = await db.examQuestion.findUnique({ where: { id } });
-  if (!question || question.userId !== userId) return null;
-  return question;
-}
-
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -25,7 +20,7 @@ export async function GET(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const question = await loadOwnedQuestion(userId, id);
+  const question = await loadExamQuestionForRead(userId, id);
   if (!question) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json({ question });
@@ -39,7 +34,7 @@ export async function PATCH(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await loadOwnedQuestion(userId, id);
+  const existing = await loadExamQuestionForEdit(userId, id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await req.json().catch(() => null);
@@ -67,7 +62,7 @@ export async function DELETE(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await loadOwnedQuestion(userId, id);
+  const existing = await loadExamQuestionForEdit(userId, id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.examQuestion.delete({ where: { id } });
