@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: studypal-db-dev
+    environment:
+      - POSTGRES_USER=studypal
+      - POSTGRES_PASSWORD=devpassword
+      - POSTGRES_DB=studypal
+    ports:
+      - "5432:5432"
+    volumes:
+      - studypal_pgdata_dev:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  studypal_pgdata_dev:
