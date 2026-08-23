@@ -1,0 +1,34 @@
+name: Deploy to Ubuntu Node
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or tag to deploy"
+        required: true
+        default: "main"
+
+concurrency:
+  group: deploy-studypal
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, studypal]
+    defaults:
+      run:
+        working-directory: /home/dan/studypal
+    steps:
+      - name: Pull requested ref
+        run: |
+          git fetch origin "${{ inputs.ref }}"
+          git reset --hard FETCH_HEAD
+
+      - name: Build image
+        run: docker compose build app
+
+      - name: Restart app
+        run: docker compose up -d app
+
+      - name: Clean up dangling images
+        run: docker image prune -f
