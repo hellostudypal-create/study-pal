@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: studypal-db
+    environment:
+      - POSTGRES_USER=studypal
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=studypal
+      - TZ=Asia/Colombo
+    volumes:
+      - studypal_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: studypal-app
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://studypal:${POSTGRES_PASSWORD}@db:5432/studypal
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - AUTH_TRUST_HOST=true
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - TZ=Asia/Colombo
+    volumes:
+      - ./uploads:/app/uploads
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  studypal_pgdata:

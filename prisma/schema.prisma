@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String?  @map("display_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  vocabWords    VocabWord[]
+  examQuestions ExamQuestion[]
+  quizzes       Quiz[]
+
+  @@map("users")
+}
+
+model VocabWord {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  term            String
+  definition      String?
+  exampleSentence String?  @map("example_sentence")
+  sourceBook      String?  @map("source_book")
+  boxLevel        Int      @default(0) @map("box_level")
+  nextReviewAt    DateTime @default(now()) @map("next_review_at")
+  timesSeen       Int      @default(0) @map("times_seen")
+  timesCorrect    Int      @default(0) @map("times_correct")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, nextReviewAt])
+  @@map("vocab_words")
+}
+
+enum QuestionLanguage {
+  en
+  si
+}
+
+model ExamQuestion {
+  id                String           @id @default(uuid())
+  userId            String           @map("user_id")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionText      String           @map("question_text")
+  answerText        String           @map("answer_text")
+  correctOptionLabel String?         @map("correct_option_label")
+  language          QuestionLanguage @default(en)
+  category          String?
+  boxLevel          Int              @default(0) @map("box_level")
+  nextReviewAt      DateTime         @default(now()) @map("next_review_at")
+  timesSeen         Int              @default(0) @map("times_seen")
+  timesCorrect      Int              @default(0) @map("times_correct")
+  source            String?
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  images QuestionImage[]
+
+  @@index([userId, nextReviewAt])
+  @@map("exam_questions")
+}
+
+enum QuestionImageRole {
+  question
+  option
+}
+
+model QuestionImage {
+  id             String            @id @default(uuid())
+  examQuestionId String            @map("exam_question_id")
+  examQuestion   ExamQuestion      @relation(fields: [examQuestionId], references: [id], onDelete: Cascade)
+  role           QuestionImageRole @default(question)
+  label          String?
+  imagePath      String            @map("image_path")
+  order          Int               @default(0)
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@index([examQuestionId])
+  @@map("question_images")
+}
+
+enum QuizType {
+  vocab
+  exam
+}
+
+enum QuizMode {
+  multiple_choice
+  self_graded
+}
+
+model Quiz {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizType       QuizType  @map("quiz_type")
+  mode           QuizMode
+  startedAt      DateTime  @default(now()) @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  totalQuestions Int       @map("total_questions")
+  pointsEarned   Int       @default(0) @map("points_earned")
+
+  items QuizItem[]
+
+  @@index([userId, startedAt])
+  @@map("quizzes")
+}
+
+model QuizItem {
+  id             String    @id @default(uuid())
+  quizId         String    @map("quiz_id")
+  quiz           Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  vocabWordId    String?   @map("vocab_word_id")
+  examQuestionId String?   @map("exam_question_id")
+  order          Int       @default(0)
+  wasCorrect     Boolean?  @map("was_correct")
+  boxLevelBefore Int       @map("box_level_before")
+  boxLevelAfter  Int?      @map("box_level_after")
+  pointsAwarded  Int       @default(0) @map("points_awarded")
+  answeredAt     DateTime? @map("answered_at")
+
+  @@index([quizId])
+  @@map("quiz_items")
+}
