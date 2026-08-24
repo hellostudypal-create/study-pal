@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Noto_Sans_Sinhala } from "next/font/google";
+import { Poppins, Noto_Sans_Sinhala } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const poppins = Poppins({
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700", "800"],
+});
 const notoSinhala = Noto_Sans_Sinhala({
   subsets: ["sinhala"],
   variable: "--font-sinhala",
@@ -30,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${notoSinhala.variable} font-sans antialiased`}
+        className={`${poppins.variable} ${notoSinhala.variable} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

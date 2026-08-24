@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen, HelpCircle, Trophy, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const items = [
+export const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/vocab", label: "Vocab", icon: BookOpen },
   { href: "/questions", label: "Questions", icon: HelpCircle },
@@ -17,9 +17,9 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-3xl items-stretch justify-around">
-        {items.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
@@ -30,7 +30,14 @@ export function BottomNav() {
                 active ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <Icon className="h-5 w-5" />
+              <div
+                className={cn(
+                  "flex h-8 w-10 items-center justify-center rounded-full",
+                  active && "bg-primary-tint"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+              </div>
               {label}
             </Link>
           );
