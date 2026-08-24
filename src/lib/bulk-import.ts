@@ -3,12 +3,19 @@ export interface ParseError {
   message: string;
 }
 
+export interface ParsedExamQuestionOption {
+  label: "A" | "B" | "C" | "D";
+  text: string;
+  isCorrect: boolean;
+}
+
 export interface ParsedExamQuestion {
   questionText: string;
   answerText: string;
   language: "en" | "si";
   category?: string;
   correctOptionLabel?: string;
+  options?: ParsedExamQuestionOption[];
 }
 
 export interface ParsedVocabWord {
@@ -56,9 +63,10 @@ function parseFields(block: string, labels: string[]): Map<string, string> {
 
 // Exam blocks have a fixed shape: an optional metadata header
 // (Category/Language/Option, one per line), then free-text question lines,
-// then an "Answer:" line that starts the (possibly multi-line) answer.
-// Metadata is only recognized in the header — once question text starts,
-// later lines are never reinterpreted as metadata.
+// then either an "Answer:" line (self-graded, possibly multi-line) or four
+// "A:"/"B:"/"C:"/"D:" option lines followed by "Correct: <letter>" (real
+// multiple-choice). Metadata is only recognized in the header — once
+// question text starts, later lines are never reinterpreted as metadata.
 export function parseExamQuestionBlocks(text: string): {
   items: ParsedExamQuestion[];
   errors: ParseError[];
@@ -67,12 +75,17 @@ export function parseExamQuestionBlocks(text: string): {
   const errors: ParseError[] = [];
   const metaPattern = /^(Category|Language|Option)\s*:\s*(.*)$/i;
   const answerPattern = /^Answer\s*:\s*(.*)$/i;
+  const optionPattern = /^([A-D])\s*:\s*(.*)$/i;
+  const correctPattern = /^Correct\s*:\s*([A-D])\s*$/i;
 
   splitBlocks(text).forEach((block, blockIndex) => {
     const meta = new Map<string, string>();
     const questionLines: string[] = [];
     const answerLines: string[] = [];
-    let state: "header" | "question" | "answer" = "header";
+    const optionText = new Map<string, string>();
+    let correctLabel: string | null = null;
+    let currentOptionLabel: string | null = null;
+    let state: "header" | "question" | "answer" | "options" = "header";
 
     for (const rawLine of block.split("\n")) {
       const line = rawLine.trimEnd();
@@ -89,6 +102,13 @@ export function parseExamQuestionBlocks(text: string): {
       }
 
       if (state === "question") {
+        const optionMatch = line.match(optionPattern);
+        if (optionMatch) {
+          state = "options";
+          currentOptionLabel = optionMatch[1].toUpperCase();
+          optionText.set(currentOptionLabel, optionMatch[2]);
+          continue;
+        }
         const answerMatch = line.match(answerPattern);
         if (answerMatch) {
           state = "answer";
@@ -99,23 +119,69 @@ export function parseExamQuestionBlocks(text: string): {
         continue;
       }
 
+      if (state === "options") {
+        const optionMatch = line.match(optionPattern);
+        if (optionMatch) {
+          currentOptionLabel = optionMatch[1].toUpperCase();
+          optionText.set(currentOptionLabel, optionMatch[2]);
+          continue;
+        }
+        const correctMatch = line.match(correctPattern);
+        if (correctMatch) {
+          correctLabel = correctMatch[1].toUpperCase();
+          currentOptionLabel = null;
+          continue;
+        }
+        if (currentOptionLabel && line.trim() !== "") {
+          optionText.set(currentOptionLabel, `${optionText.get(currentOptionLabel)}\n${line}`);
+        }
+        continue;
+      }
+
       answerLines.push(line);
     }
 
     const questionText = questionLines.join("\n").trim();
-    const answerText = answerLines.join("\n").trim();
     const languageRaw = (meta.get("language") ?? "en").trim().toLowerCase();
 
     if (!questionText) {
       errors.push({ blockIndex, message: "Missing question text" });
       return;
     }
-    if (!answerText) {
-      errors.push({ blockIndex, message: "Missing \"Answer:\" line" });
-      return;
-    }
     if (languageRaw !== "en" && languageRaw !== "si") {
       errors.push({ blockIndex, message: `Unknown language "${languageRaw}" (use en or si)` });
+      return;
+    }
+
+    if (state === "options") {
+      const labels: Array<"A" | "B" | "C" | "D"> = ["A", "B", "C", "D"];
+      const missing = labels.filter((l) => !optionText.has(l));
+      if (missing.length > 0) {
+        errors.push({ blockIndex, message: `Missing option${missing.length > 1 ? "s" : ""} ${missing.join(", ")}` });
+        return;
+      }
+      if (!correctLabel) {
+        errors.push({ blockIndex, message: "Missing \"Correct:\" line" });
+        return;
+      }
+      const options: ParsedExamQuestionOption[] = labels.map((label) => ({
+        label,
+        text: (optionText.get(label) ?? "").trim(),
+        isCorrect: label === correctLabel,
+      }));
+      items.push({
+        questionText,
+        answerText: options.find((o) => o.isCorrect)!.text,
+        language: languageRaw,
+        category: meta.get("category") || undefined,
+        options,
+      });
+      return;
+    }
+
+    const answerText = answerLines.join("\n").trim();
+    if (!answerText) {
+      errors.push({ blockIndex, message: "Missing \"Answer:\" line" });
       return;
     }
 

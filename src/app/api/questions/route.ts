@@ -4,6 +4,19 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { assertCanEditBank, getEntitledBankIds, getOrCreatePersonalBank } from "@/lib/authz";
 
+const optionsSchema = z
+  .array(
+    z.object({
+      label: z.enum(["A", "B", "C", "D"]),
+      text: z.string().min(1).max(500),
+      isCorrect: z.boolean(),
+    })
+  )
+  .length(4)
+  .refine((opts) => opts.filter((o) => o.isCorrect).length === 1, {
+    message: "Exactly one option must be marked correct",
+  });
+
 const createSchema = z.object({
   questionText: z.string().min(1).max(4000),
   answerText: z.string().min(1).max(4000),
@@ -11,6 +24,7 @@ const createSchema = z.object({
   category: z.string().max(200).optional(),
   correctOptionLabel: z.string().max(10).optional(),
   bankId: z.string().uuid().optional(),
+  options: optionsSchema.optional(),
 });
 
 export async function GET(req: Request) {
@@ -59,14 +73,21 @@ export async function POST(req: Request) {
     );
   }
 
-  const { bankId: requestedBankId, ...data } = parsed.data;
+  const { bankId: requestedBankId, options, ...data } = parsed.data;
   const bankId = requestedBankId ?? (await getOrCreatePersonalBank(userId, "exam")).id;
 
   const bank = await assertCanEditBank(userId, bankId);
   if (!bank) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const question = await db.examQuestion.create({
-    data: { ...data, bankId },
+    data: {
+      ...data,
+      bankId,
+      options: options
+        ? { create: options.map((o, order) => ({ ...o, order })) }
+        : undefined,
+    },
+    include: { options: true },
   });
 
   return NextResponse.json({ question }, { status: 201 });

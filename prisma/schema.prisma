@@ -150,10 +150,24 @@ model ExamQuestion {
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
 
-  images QuestionImage[]
+  images  QuestionImage[]
+  options ExamQuestionOption[]
 
   @@index([bankId, nextReviewAt])
   @@map("exam_questions")
+}
+
+model ExamQuestionOption {
+  id             String       @id @default(uuid())
+  examQuestionId String       @map("exam_question_id")
+  examQuestion   ExamQuestion @relation(fields: [examQuestionId], references: [id], onDelete: Cascade)
+  label          String
+  text           String
+  isCorrect      Boolean      @default(false) @map("is_correct")
+  order          Int          @default(0)
+
+  @@index([examQuestionId])
+  @@map("exam_question_options")
 }
 
 enum QuestionImageRole {
@@ -202,18 +216,24 @@ model Quiz {
   @@map("quizzes")
 }
 
+enum AnswerKind {
+  verified_choice
+  self_assessed
+}
+
 model QuizItem {
-  id             String    @id @default(uuid())
-  quizId         String    @map("quiz_id")
-  quiz           Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  vocabWordId    String?   @map("vocab_word_id")
-  examQuestionId String?   @map("exam_question_id")
-  order          Int       @default(0)
-  wasCorrect     Boolean?  @map("was_correct")
-  boxLevelBefore Int       @map("box_level_before")
-  boxLevelAfter  Int?      @map("box_level_after")
-  pointsAwarded  Int       @default(0) @map("points_awarded")
-  answeredAt     DateTime? @map("answered_at")
+  id             String     @id @default(uuid())
+  quizId         String     @map("quiz_id")
+  quiz           Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  vocabWordId    String?    @map("vocab_word_id")
+  examQuestionId String?    @map("exam_question_id")
+  order          Int        @default(0)
+  answerKind     AnswerKind @default(self_assessed) @map("answer_kind")
+  wasCorrect     Boolean?   @map("was_correct")
+  boxLevelBefore Int        @map("box_level_before")
+  boxLevelAfter  Int?       @map("box_level_after")
+  pointsAwarded  Int        @default(0) @map("points_awarded")
+  answeredAt     DateTime?  @map("answered_at")
 
   @@index([quizId])
   @@map("quiz_items")

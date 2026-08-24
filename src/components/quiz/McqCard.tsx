@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import type { QuizAnswerResult } from "@/components/quiz/types";
 
 export interface McqItem {
   quizItemId: string;
@@ -14,10 +15,6 @@ export interface McqItem {
   options: string[] | null;
   correctAnswer: string | null;
 }
-
-export type McqAnswerResult =
-  | { kind: "verified_choice"; selectedAnswer: string }
-  | { kind: "self_assessed"; wasCorrect: boolean };
 
 export function McqCard({
   item,
@@ -28,7 +25,7 @@ export function McqCard({
   item: McqItem;
   index: number;
   total: number;
-  onAnswered: (result: McqAnswerResult) => void;
+  onAnswered: (result: QuizAnswerResult) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [typed, setTyped] = useState("");

@@ -4,12 +4,26 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { loadExamQuestionForEdit, loadExamQuestionForRead } from "@/lib/authz";
 
+const optionsSchema = z
+  .array(
+    z.object({
+      label: z.enum(["A", "B", "C", "D"]),
+      text: z.string().min(1).max(500),
+      isCorrect: z.boolean(),
+    })
+  )
+  .length(4)
+  .refine((opts) => opts.filter((o) => o.isCorrect).length === 1, {
+    message: "Exactly one option must be marked correct",
+  });
+
 const updateSchema = z.object({
   questionText: z.string().min(1).max(4000).optional(),
   answerText: z.string().min(1).max(4000).optional(),
   language: z.enum(["en", "si"]).optional(),
   category: z.string().max(200).nullable().optional(),
   correctOptionLabel: z.string().max(10).nullable().optional(),
+  options: optionsSchema.nullable().optional(),
 });
 
 export async function GET(
@@ -23,7 +37,12 @@ export async function GET(
   const question = await loadExamQuestionForRead(userId, id);
   if (!question) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  return NextResponse.json({ question });
+  const options = await db.examQuestionOption.findMany({
+    where: { examQuestionId: id },
+    orderBy: { order: "asc" },
+  });
+
+  return NextResponse.json({ question: { ...question, options } });
 }
 
 export async function PATCH(
@@ -46,9 +65,18 @@ export async function PATCH(
     );
   }
 
-  const question = await db.examQuestion.update({
-    where: { id },
-    data: parsed.data,
+  const { options, ...data } = parsed.data;
+
+  const question = await db.$transaction(async (tx) => {
+    if (options !== undefined) {
+      await tx.examQuestionOption.deleteMany({ where: { examQuestionId: id } });
+      if (options) {
+        await tx.examQuestionOption.createMany({
+          data: options.map((o, order) => ({ ...o, order, examQuestionId: id })),
+        });
+      }
+    }
+    return tx.examQuestion.update({ where: { id }, data });
   });
 
   return NextResponse.json({ question });

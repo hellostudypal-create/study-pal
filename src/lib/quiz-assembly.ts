@@ -83,8 +83,9 @@ export async function assembleExamQuiz(userId: string, count: number, bankId?: s
   return assembleIds(due, neverSeen, fallbackRandom, count);
 }
 
-// For vocab MCQ mode: pick up to 3 distractor definitions from the user's
-// other words. Returns null if there aren't enough other words to draw from.
+// For vocab MCQ mode: pick up to `count` distractor definitions from the
+// user's other words - fewer if the bank doesn't have that many, only null
+// if there's nothing at all to draw from (falls back to typed self-grading).
 export async function pickDistractors(
   userId: string,
   excludeId: string,
@@ -97,12 +98,12 @@ export async function pickDistractors(
     select: { definition: true },
   });
   const pool = others.map((o) => o.definition!).filter(Boolean);
-  if (pool.length < count) return null;
+  if (pool.length === 0) return null;
 
   const shuffled = [...pool];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  return shuffled.slice(0, count);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
 }

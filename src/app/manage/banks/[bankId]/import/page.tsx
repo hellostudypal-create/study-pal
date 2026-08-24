@@ -24,6 +24,10 @@ export default async function BankImportPage({
             Separate each {bank.kind === "exam" ? "question" : "word"} with a line containing
             just <code>---</code>. Labeled lines (like {bank.kind === "exam" ? '"Answer:"' : '"Definition:"'}) can be
             reordered or omitted where optional.
+            {bank.kind === "exam" && (
+              <> For real multiple-choice, use <code>A:</code>/<code>B:</code>/<code>C:</code>/<code>D:</code> lines
+              instead of <code>Answer:</code>, followed by <code>Correct: &lt;letter&gt;</code>.</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
