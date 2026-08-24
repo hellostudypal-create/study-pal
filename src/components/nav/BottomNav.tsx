@@ -9,7 +9,7 @@ export const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/vocab", label: "Vocab", icon: BookOpen },
   { href: "/questions", label: "Questions", icon: HelpCircle },
-  { href: "/quiz/vocab", label: "Quiz", icon: Trophy },
+  { href: "/quiz", label: "Quiz", icon: Trophy },
   { href: "/progress", label: "Progress", icon: BarChart3 },
 ];
 
