@@ -4,8 +4,8 @@ import { getCurrentUserId } from "@/lib/auth";
 import { getEntitledBankIds } from "@/lib/authz";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
 
@@ -107,9 +107,16 @@ export default async function VocabListPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold">{word.term}</h3>
-                      <Badge variant={word.boxLevel === 0 ? "outline" : "secondary"}>
-                        {word.boxLevel === 0 ? "New" : `Level ${word.boxLevel}`}
-                      </Badge>
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold",
+                          word.boxLevel === 0 && "bg-secondary text-muted-foreground",
+                          word.boxLevel > 0 && word.boxLevel < 5 && "bg-primary-tint text-primary",
+                          word.boxLevel === 5 && "bg-gold-tint text-gold-ink"
+                        )}
+                      >
+                        {word.boxLevel === 0 ? "New" : word.boxLevel === 5 ? "Mastered" : `Level ${word.boxLevel}`}
+                      </span>
                     </div>
                     {word.definition && (
                       <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">

@@ -75,7 +75,12 @@ export default function ExamQuizPage() {
   }
 
   if (phase === "loading") {
-    return <p className="text-muted-foreground">Loading…</p>;
+    return (
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        Loading…
+      </div>
+    );
   }
 
   const item = items[index];
@@ -83,7 +88,7 @@ export default function ExamQuizPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Question Bank Quiz</h1>
-        <span className="text-sm font-medium text-muted-foreground">{points} pts</span>
+        <span className="rounded-full bg-gold-tint px-3 py-1 text-sm font-bold text-gold-ink">{points} pts</span>
       </div>
       <SelfGradeCard
         key={item.quizItemId}

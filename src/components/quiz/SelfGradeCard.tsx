@@ -35,10 +35,10 @@ export function SelfGradeCard({
   return (
     <Card>
       <CardHeader>
-        <p className="text-xs text-muted-foreground">
+        <span className="inline-flex w-fit items-center rounded-full bg-primary-tint px-3 py-1 text-xs font-bold text-primary">
           Question {index + 1} of {total}
-        </p>
-        <p className={cn("text-lg font-medium", textClass)}>{item.questionText}</p>
+        </span>
+        <p className={cn("text-lg font-semibold", textClass)}>{item.questionText}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {questionImages.length > 0 && (
@@ -63,9 +63,9 @@ export function SelfGradeCard({
                   src={`/api/uploads/questions/${img.imagePath}`}
                   alt={img.label ?? "Option"}
                   className={cn(
-                    "aspect-square rounded-md border object-contain bg-muted",
+                    "aspect-square rounded-md border-[1.5px] object-contain bg-muted",
                     revealed && img.label === item.correctOptionLabel
-                      ? "border-green-600"
+                      ? "border-success"
                       : "border-border"
                   )}
                 />
@@ -81,9 +81,9 @@ export function SelfGradeCard({
           </Button>
         ) : (
           <div className="space-y-3">
-            <div className="rounded-md bg-muted p-3">
+            <div className="rounded-sm bg-muted p-3.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Answer</span>
+                <span className="text-sm font-semibold">Answer</span>
                 {item.correctOptionLabel && <Badge variant="outline">Option {item.correctOptionLabel}</Badge>}
               </div>
               <p className={cn("mt-1 text-sm", textClass)}>{item.answerText}</p>
