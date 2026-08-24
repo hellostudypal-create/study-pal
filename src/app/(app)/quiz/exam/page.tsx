@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { SelfGradeCard, type SelfGradeItem } from "@/components/quiz/SelfGradeCard";
+import type { QuizAnswerResult } from "@/components/quiz/types";
+
+interface BankOption {
+  id: string;
+  title: string;
+}
 
 export default function ExamQuizPage() {
   const router = useRouter();
@@ -14,6 +22,15 @@ export default function ExamQuizPage() {
   const [items, setItems] = useState<SelfGradeItem[]>([]);
   const [index, setIndex] = useState(0);
   const [points, setPoints] = useState(0);
+  const [banks, setBanks] = useState<BankOption[]>([]);
+  const [bankId, setBankId] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/banks/mine?kind=exam")
+      .then((res) => res.json())
+      .then((data) => setBanks(data.banks ?? []))
+      .catch(() => {});
+  }, []);
 
   async function startQuiz() {
     setPhase("loading");
@@ -21,7 +38,7 @@ export default function ExamQuizPage() {
     const res = await fetch("/api/quiz/exam", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ count: 10 }),
+      body: JSON.stringify({ count: 10, bankId: bankId || undefined }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -36,12 +53,12 @@ export default function ExamQuizPage() {
     setPhase("taking");
   }
 
-  async function handleAnswered(wasCorrect: boolean) {
+  async function handleAnswered(result: QuizAnswerResult) {
     const item = items[index];
     const res = await fetch(`/api/quiz/${quizId}/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quizItemId: item.quizItemId, kind: "self_assessed", wasCorrect }),
+      body: JSON.stringify({ quizItemId: item.quizItemId, ...result }),
     });
     const data = await res.json();
     if (res.ok) setPoints((p) => p + data.pointsAwarded);
@@ -65,8 +82,21 @@ export default function ExamQuizPage() {
               Up to 10 questions — reveal the answer, then mark yourself right or wrong.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {error && <p className="mb-3 text-sm text-destructive">{error}</p>}
+          <CardContent className="space-y-4">
+            {banks.length > 1 && (
+              <div className="space-y-1.5">
+                <Label htmlFor="bank">Bank</Label>
+                <Select id="bank" value={bankId} onChange={(e) => setBankId(e.target.value)}>
+                  <option value="">All banks</option>
+                  {banks.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.title}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button onClick={startQuiz}>Start Quiz</Button>
           </CardContent>
         </Card>

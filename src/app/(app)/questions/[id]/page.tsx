@@ -19,10 +19,16 @@ export default async function EditQuestionPage({
     notFound();
   }
 
-  const images = await db.questionImage.findMany({
-    where: { examQuestionId: id },
-    orderBy: { order: "asc" },
-  });
+  const [images, options] = await Promise.all([
+    db.questionImage.findMany({
+      where: { examQuestionId: id },
+      orderBy: { order: "asc" },
+    }),
+    db.examQuestionOption.findMany({
+      where: { examQuestionId: id },
+      orderBy: { order: "asc" },
+    }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -40,6 +46,7 @@ export default async function EditQuestionPage({
               language: question.language,
               category: question.category ?? "",
               correctOptionLabel: question.correctOptionLabel ?? "",
+              options,
             }}
           />
         </CardContent>

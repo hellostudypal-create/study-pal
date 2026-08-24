@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { McqCard, type McqItem, type McqAnswerResult } from "@/components/quiz/McqCard";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { McqCard, type McqItem } from "@/components/quiz/McqCard";
+import type { QuizAnswerResult } from "@/components/quiz/types";
+
+interface BankOption {
+  id: string;
+  title: string;
+}
 
 export default function VocabQuizPage() {
   const router = useRouter();
@@ -14,6 +22,15 @@ export default function VocabQuizPage() {
   const [items, setItems] = useState<McqItem[]>([]);
   const [index, setIndex] = useState(0);
   const [points, setPoints] = useState(0);
+  const [banks, setBanks] = useState<BankOption[]>([]);
+  const [bankId, setBankId] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/banks/mine?kind=vocab")
+      .then((res) => res.json())
+      .then((data) => setBanks(data.banks ?? []))
+      .catch(() => {});
+  }, []);
 
   async function startQuiz() {
     setPhase("loading");
@@ -21,7 +38,7 @@ export default function VocabQuizPage() {
     const res = await fetch("/api/quiz/vocab", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ count: 10 }),
+      body: JSON.stringify({ count: 10, bankId: bankId || undefined }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -36,7 +53,7 @@ export default function VocabQuizPage() {
     setPhase("taking");
   }
 
-  async function handleAnswered(result: McqAnswerResult) {
+  async function handleAnswered(result: QuizAnswerResult) {
     const item = items[index];
     const res = await fetch(`/api/quiz/${quizId}/answer`, {
       method: "POST",
@@ -65,8 +82,21 @@ export default function VocabQuizPage() {
               Up to 10 words — words you got wrong before come back first.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {error && <p className="mb-3 text-sm text-destructive">{error}</p>}
+          <CardContent className="space-y-4">
+            {banks.length > 1 && (
+              <div className="space-y-1.5">
+                <Label htmlFor="bank">Bank</Label>
+                <Select id="bank" value={bankId} onChange={(e) => setBankId(e.target.value)}>
+                  <option value="">All banks</option>
+                  {banks.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.title}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button onClick={startQuiz}>Start Quiz</Button>
           </CardContent>
         </Card>

@@ -63,6 +63,7 @@ export async function POST(req: Request) {
           vocabWordId: item.word.id,
           order,
           boxLevelBefore: item.word.boxLevel,
+          answerKind: item.options !== null ? "verified_choice" : "self_assessed",
         })),
       },
     },

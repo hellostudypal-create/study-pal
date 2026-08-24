@@ -18,6 +18,14 @@ This ship has a widening crack in its hull.
 The word closest in meaning to "widening" is:
 Answer: growing larger
 ---
+Category: IQ
+Which number completes the pattern? 2, 4, 8, 16, ...
+A: 24
+B: 32
+C: 30
+D: 28
+Correct: B
+---
 `;
 
 const VOCAB_PLACEHOLDER = `Term: ephemeral
@@ -106,7 +114,17 @@ export function BulkImportForm({ bankId, kind }: { bankId: string; kind: "exam" 
                   ? (items as ParsedExamQuestion[]).map((item, i) => (
                       <li key={i} className="space-y-1 p-3 text-sm">
                         <p className="font-medium">{item.questionText}</p>
-                        <p className="text-muted-foreground">Answer: {item.answerText}</p>
+                        {item.options ? (
+                          <ul className="space-y-0.5 text-muted-foreground">
+                            {item.options.map((o) => (
+                              <li key={o.label} className={o.isCorrect ? "font-semibold text-success" : ""}>
+                                {o.label}. {o.text}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-muted-foreground">Answer: {item.answerText}</p>
+                        )}
                         {item.category && (
                           <Badge variant="outline" className="text-[10px]">{item.category}</Badge>
                         )}

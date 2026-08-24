@@ -31,17 +31,32 @@ export async function POST(req: Request) {
     );
   }
 
+  const options = await db.examQuestionOption.findMany({
+    where: { examQuestionId: { in: questions.map((q) => q.id) } },
+    orderBy: { order: "asc" },
+  });
+  const optionsByQuestion = new Map<string, typeof options>();
+  for (const opt of options) {
+    const list = optionsByQuestion.get(opt.examQuestionId) ?? [];
+    list.push(opt);
+    optionsByQuestion.set(opt.examQuestionId, list);
+  }
+
+  const hasMcqOptions = (questionId: string) => (optionsByQuestion.get(questionId)?.length ?? 0) === 4;
+  const anyMcq = questions.some((q) => hasMcqOptions(q.id));
+
   const quiz = await db.quiz.create({
     data: {
       userId,
       quizType: "exam",
-      mode: "self_graded",
+      mode: anyMcq ? "multiple_choice" : "self_graded",
       totalQuestions: questions.length,
       items: {
         create: questions.map((q, order) => ({
           examQuestionId: q.id,
           order,
           boxLevelBefore: q.boxLevel,
+          answerKind: hasMcqOptions(q.id) ? "verified_choice" : "self_assessed",
         })),
       },
     },
@@ -62,6 +77,15 @@ export async function POST(req: Request) {
       answerText: q.answerText,
       language: q.language,
       correctOptionLabel: q.correctOptionLabel,
+      options: hasMcqOptions(q.id)
+        ? optionsByQuestion.get(q.id)!.map((o) => ({ label: o.label, text: o.text }))
+        : null,
+      // Shown client-side for instant feedback, same as vocab's correctAnswer -
+      // scoring authority is still the server-side check in /answer, which
+      // never trusts what the client claims either way.
+      correctAnswer: hasMcqOptions(q.id)
+        ? optionsByQuestion.get(q.id)!.find((o) => o.isCorrect)?.text ?? null
+        : null,
       images: images
         .filter((img) => img.examQuestionId === q.id)
         .map((img) => ({ id: img.id, role: img.role, label: img.label, imagePath: img.imagePath })),

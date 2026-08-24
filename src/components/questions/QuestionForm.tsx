@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 
+const OPTION_LABELS = ["A", "B", "C", "D"] as const;
+type OptionLabel = (typeof OPTION_LABELS)[number];
+
 export interface QuestionFormValues {
   id?: string;
   questionText: string;
@@ -16,6 +19,7 @@ export interface QuestionFormValues {
   language: "en" | "si";
   category: string;
   correctOptionLabel: string;
+  options?: { label: string; text: string; isCorrect: boolean }[];
 }
 
 export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
@@ -29,6 +33,20 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
   const [correctOptionLabel, setCorrectOptionLabel] = useState(
     initial?.correctOptionLabel ?? ""
   );
+
+  const initialMcq = (initial?.options?.length ?? 0) === 4;
+  const [mcqEnabled, setMcqEnabled] = useState(initialMcq);
+  const [optionTexts, setOptionTexts] = useState<Record<OptionLabel, string>>(() => {
+    const base: Record<OptionLabel, string> = { A: "", B: "", C: "", D: "" };
+    for (const o of initial?.options ?? []) {
+      if (OPTION_LABELS.includes(o.label as OptionLabel)) base[o.label as OptionLabel] = o.text;
+    }
+    return base;
+  });
+  const [correctLabel, setCorrectLabel] = useState<OptionLabel>(
+    (initial?.options?.find((o) => o.isCorrect)?.label as OptionLabel) ?? "A"
+  );
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -38,10 +56,26 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (mcqEnabled && OPTION_LABELS.some((l) => !optionTexts[l].trim())) {
+      setError("Fill in all four options, or turn off multiple-choice.");
+      return;
+    }
+
     setLoading(true);
 
     const url = isEdit ? `/api/questions/${initial!.id}` : "/api/questions";
     const method = isEdit ? "PATCH" : "POST";
+
+    const options = mcqEnabled
+      ? OPTION_LABELS.map((label) => ({
+          label,
+          text: optionTexts[label].trim(),
+          isCorrect: label === correctLabel,
+        }))
+      : isEdit
+        ? null
+        : undefined;
 
     const res = await fetch(url, {
       method,
@@ -52,6 +86,7 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
         language,
         category: category || undefined,
         correctOptionLabel: correctOptionLabel || undefined,
+        options,
       }),
     });
 
@@ -120,6 +155,11 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
           value={answerText}
           onChange={(e) => setAnswerText(e.target.value)}
         />
+        {mcqEnabled && (
+          <p className="text-xs text-muted-foreground">
+            Not shown to quiz-takers while multiple-choice options are on below — kept as a fallback summary.
+          </p>
+        )}
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="category">Category</Label>
@@ -130,6 +170,44 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
           placeholder="e.g. Bank Interview 2026, Physics Grade 10"
         />
       </div>
+
+      <div className="space-y-3 rounded-md border border-dashed border-border p-4">
+        <div className="flex items-center gap-2">
+          <input
+            id="mcqEnabled"
+            type="checkbox"
+            checked={mcqEnabled}
+            onChange={(e) => setMcqEnabled(e.target.checked)}
+            className="h-4 w-4 rounded border-input"
+          />
+          <Label htmlFor="mcqEnabled">Multiple-choice (4 text options)</Label>
+        </div>
+        {mcqEnabled && (
+          <div className="space-y-2.5">
+            {OPTION_LABELS.map((label) => (
+              <div key={label} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="correctLabel"
+                  checked={correctLabel === label}
+                  onChange={() => setCorrectLabel(label)}
+                  aria-label={`Option ${label} is correct`}
+                  className="h-4 w-4 shrink-0"
+                />
+                <span className="w-5 shrink-0 text-sm font-bold">{label}</span>
+                <Input
+                  value={optionTexts[label]}
+                  onChange={(e) => setOptionTexts((prev) => ({ ...prev, [label]: e.target.value }))}
+                  placeholder={`Option ${label} text`}
+                  className={textClass}
+                />
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">Select the radio button next to the correct option.</p>
+          </div>
+        )}
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="correctOptionLabel">Correct option (if this uses image answer options)</Label>
         <Input
@@ -140,7 +218,7 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
           maxLength={5}
         />
         <p className="text-xs text-muted-foreground">
-          Leave blank for plain text questions. Fill in once you&apos;ve added labeled answer-option images below.
+          For the separate image-based answer options below (not the text options above) — leave blank otherwise.
         </p>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
