@@ -47,9 +47,11 @@ export default async function AppLayout({
 
       <Sidebar userName={session?.user?.name} signOutAction={signOutAction} isAdmin={isAdmin} />
 
-      <main className="mx-auto max-w-3xl px-4 py-6 pb-20 lg:mx-0 lg:max-w-5xl lg:pb-10 lg:pl-72 lg:pr-6">
-        {children}
-      </main>
+      <div className="lg:pl-60">
+        <main className="mx-auto max-w-3xl px-4 py-6 pb-20 lg:max-w-5xl lg:px-8 lg:pb-10">
+          {children}
+        </main>
+      </div>
       <BottomNav />
     </div>
   );

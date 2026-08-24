@@ -57,13 +57,16 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
 
     setLoading(false);
 
+    const data = await res.json().catch(() => ({}));
+
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Something went wrong");
       return;
     }
 
-    router.push("/questions");
+    // Land on the edit page after creating, not the list - image upload
+    // needs a question id, so this is the first point it's possible.
+    router.push(isEdit ? "/questions" : `/questions/${data.question.id}`);
     router.refresh();
   }
 
