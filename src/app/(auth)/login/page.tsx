@@ -85,6 +85,11 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          <Link href="/store" className="underline-offset-4 hover:underline">
+            Browse available banks
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );
