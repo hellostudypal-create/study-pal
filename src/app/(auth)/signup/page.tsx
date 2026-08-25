@@ -101,7 +101,11 @@ export default function SignupPage() {
             <p className="text-xs text-muted-foreground">At least 8 characters.</p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-br from-primary to-primary-2 hover:opacity-90"
+            disabled={loading}
+          >
             {loading ? "Creating account…" : "Sign up"}
           </Button>
         </form>
