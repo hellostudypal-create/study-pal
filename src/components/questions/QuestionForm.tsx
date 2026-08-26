@@ -22,7 +22,13 @@ export interface QuestionFormValues {
   options?: { label: string; text: string; isCorrect: boolean }[];
 }
 
-export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
+export function QuestionForm({
+  initial,
+  bankId,
+}: {
+  initial?: QuestionFormValues;
+  bankId?: string;
+}) {
   const router = useRouter();
   const isEdit = !!initial?.id;
 
@@ -87,6 +93,7 @@ export function QuestionForm({ initial }: { initial?: QuestionFormValues }) {
         category: category || undefined,
         correctOptionLabel: correctOptionLabel || undefined,
         options,
+        ...(isEdit ? {} : { bankId }),
       }),
     });
 
