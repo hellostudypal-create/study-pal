@@ -8,7 +8,7 @@ const updateSchema = z.object({
   term: z.string().min(1).max(200).optional(),
   definition: z.string().max(2000).nullable().optional(),
   exampleSentence: z.string().max(2000).nullable().optional(),
-  sourceBook: z.string().max(300).nullable().optional(),
+  bookId: z.string().uuid().nullable().optional(),
 });
 
 export async function GET(

@@ -8,7 +8,7 @@ const createSchema = z.object({
   term: z.string().min(1).max(200),
   definition: z.string().max(2000).optional(),
   exampleSentence: z.string().max(2000).optional(),
-  sourceBook: z.string().max(300).optional(),
+  bookId: z.string().uuid().nullable().optional(),
   bankId: z.string().uuid().optional(),
 });
 

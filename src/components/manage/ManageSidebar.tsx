@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Library, Users, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Library, Users, BookOpen, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
 
 const navItems = [
   { href: "/manage", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/manage/banks", label: "Banks", icon: Library, exact: false },
+  { href: "/manage/books", label: "Books", icon: BookOpen, exact: false },
   { href: "/manage/users", label: "Users", icon: Users, exact: false },
 ];
 

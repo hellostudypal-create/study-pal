@@ -36,8 +36,19 @@ export async function POST(req: Request) {
   const bank = await assertCanEditBank(userId, bankId);
   if (!bank) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const bookIdByTitle = new Map<string, string>();
+  for (const title of new Set(items.map((i) => i.sourceBook?.trim()).filter((t): t is string => !!t))) {
+    const book =
+      (await db.book.findFirst({ where: { title } })) ?? (await db.book.create({ data: { title } }));
+    bookIdByTitle.set(title, book.id);
+  }
+
   const result = await db.vocabWord.createMany({
-    data: items.map((item) => ({ ...item, bankId })),
+    data: items.map(({ sourceBook, ...item }) => ({
+      ...item,
+      bankId,
+      bookId: sourceBook?.trim() ? bookIdByTitle.get(sourceBook.trim()) : undefined,
+    })),
   });
 
   return NextResponse.json({ created: result.count }, { status: 201 });

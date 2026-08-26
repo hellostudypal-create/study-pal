@@ -105,16 +105,30 @@ model Entitlement {
   @@map("entitlements")
 }
 
+model Book {
+  id          String   @id @default(uuid())
+  title       String
+  author      String?
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  words VocabWord[]
+
+  @@map("books")
+}
+
 model VocabWord {
   id              String   @id @default(uuid())
   bankId          String   @map("bank_id")
   bank            Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
   userId          String?  @map("user_id")
   user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  bookId          String?  @map("book_id")
+  book            Book?    @relation(fields: [bookId], references: [id], onDelete: SetNull)
   term            String
   definition      String?
   exampleSentence String?  @map("example_sentence")
-  sourceBook      String?  @map("source_book")
   boxLevel        Int      @default(0) @map("box_level")
   nextReviewAt    DateTime @default(now()) @map("next_review_at")
   timesSeen       Int      @default(0) @map("times_seen")
@@ -123,6 +137,7 @@ model VocabWord {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@index([bankId, nextReviewAt])
+  @@index([bookId])
   @@map("vocab_words")
 }
 
