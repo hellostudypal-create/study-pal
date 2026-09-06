@@ -122,4 +122,4 @@ You'll need **Node 20+** and a **PostgreSQL** database (the app itself doesn't b
 
 ## Deployment
 
-The app ships as a multi-stage **Docker** image (`Dockerfile`) and runs alongside Postgres via `docker-compose.yml`. On the home server, a GitHub Actions workflow (`.github/workflows/deploy.yml`) runs on a self-hosted runner: it pulls the requested branch/tag, rebuilds the `app` image, and restarts it with `docker compose up -d app`. Migrations run automatically on container start (`docker-entrypoint.sh` calls `prisma migrate deploy` before starting Next.js).
+The app ships as a multi-stage **Docker** image (`Dockerfile`) and runs alongside Postgres via `docker-compose.yml`. On the home server, a GitHub Actions workflow (`.github/workflows/deploy.yml`) runs on a self-hosted runner: it pulls the requested branch/tag, rebuilds the `app` image, and restarts it with `docker compose up -d app`. Migrations run automatically on container start (`docker-entrypoint.sh` calls `prisma migrate deploy` before starting Next.js)..
