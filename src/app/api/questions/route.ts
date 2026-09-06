@@ -23,6 +23,7 @@ const createSchema = z.object({
   language: z.enum(["en", "si"]).default("en"),
   category: z.string().max(200).optional(),
   correctOptionLabel: z.string().max(10).optional(),
+  explanationVideoUrl: z.string().trim().url().max(500).optional(),
   bankId: z.string().uuid().optional(),
   options: optionsSchema.optional(),
 });

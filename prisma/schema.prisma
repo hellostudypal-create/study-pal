@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -24,10 +25,10 @@ model User {
   vocabWords          VocabWord[]
   examQuestions       ExamQuestion[]
   quizzes             Quiz[]
-  ownedBanks          Bank[]        @relation("BankOwner")
+  ownedBanks          Bank[]         @relation("BankOwner")
   entitlements        Entitlement[]
   editableBanks       BankEditor[]
-  grantedEntitlements Entitlement[] @relation("GrantedBy")
+  grantedEntitlements Entitlement[]  @relation("GrantedBy")
 
   @@map("users")
 }
@@ -147,23 +148,24 @@ enum QuestionLanguage {
 }
 
 model ExamQuestion {
-  id                 String           @id @default(uuid())
-  bankId             String           @map("bank_id")
-  bank               Bank             @relation(fields: [bankId], references: [id], onDelete: Cascade)
-  userId             String?          @map("user_id")
-  user               User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  questionText       String           @map("question_text")
-  answerText         String           @map("answer_text")
-  correctOptionLabel String?          @map("correct_option_label")
-  language           QuestionLanguage @default(en)
-  category           String?
-  boxLevel           Int              @default(0) @map("box_level")
-  nextReviewAt       DateTime         @default(now()) @map("next_review_at")
-  timesSeen          Int              @default(0) @map("times_seen")
-  timesCorrect       Int              @default(0) @map("times_correct")
-  source             String?
-  createdAt          DateTime         @default(now()) @map("created_at")
-  updatedAt          DateTime         @updatedAt @map("updated_at")
+  id                  String           @id @default(uuid())
+  bankId              String           @map("bank_id")
+  bank                Bank             @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  userId              String?          @map("user_id")
+  user                User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  questionText        String           @map("question_text")
+  answerText          String           @map("answer_text")
+  correctOptionLabel  String?          @map("correct_option_label")
+  explanationVideoUrl String?          @map("explanation_video_url")
+  language            QuestionLanguage @default(en)
+  category            String?
+  boxLevel            Int              @default(0) @map("box_level")
+  nextReviewAt        DateTime         @default(now()) @map("next_review_at")
+  timesSeen           Int              @default(0) @map("times_seen")
+  timesCorrect        Int              @default(0) @map("times_correct")
+  source              String?
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
 
   images  QuestionImage[]
   options ExamQuestionOption[]
@@ -188,6 +190,7 @@ model ExamQuestionOption {
 enum QuestionImageRole {
   question
   option
+  answer
 }
 
 model QuestionImage {

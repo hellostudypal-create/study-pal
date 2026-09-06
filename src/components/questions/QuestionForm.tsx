@@ -19,6 +19,7 @@ export interface QuestionFormValues {
   language: "en" | "si";
   category: string;
   correctOptionLabel: string;
+  explanationVideoUrl: string;
   options?: { label: string; text: string; isCorrect: boolean }[];
 }
 
@@ -38,6 +39,9 @@ export function QuestionForm({
   const [category, setCategory] = useState(initial?.category ?? "");
   const [correctOptionLabel, setCorrectOptionLabel] = useState(
     initial?.correctOptionLabel ?? ""
+  );
+  const [explanationVideoUrl, setExplanationVideoUrl] = useState(
+    initial?.explanationVideoUrl ?? ""
   );
 
   const initialMcq = (initial?.options?.length ?? 0) === 4;
@@ -92,6 +96,7 @@ export function QuestionForm({
         language,
         category: category || undefined,
         correctOptionLabel: correctOptionLabel || undefined,
+        explanationVideoUrl: explanationVideoUrl.trim() || undefined,
         options,
         ...(isEdit ? {} : { bankId }),
       }),
@@ -154,19 +159,37 @@ export function QuestionForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="answerText">Answer</Label>
+        <Label htmlFor="answerText">Answer / solution</Label>
         <Textarea
           id="answerText"
           required
+          rows={6}
           className={textClass}
           value={answerText}
           onChange={(e) => setAnswerText(e.target.value)}
         />
+        <p className="text-xs text-muted-foreground">
+          Supports Markdown — **bold**, *italic*, lists, [links](https://…), and ![images](https://…). Add
+          uploaded images below, and an explanation video underneath.
+        </p>
         {mcqEnabled && (
           <p className="text-xs text-muted-foreground">
             Not shown to quiz-takers while multiple-choice options are on below — kept as a fallback summary.
           </p>
         )}
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="explanationVideoUrl">Explanation video (optional)</Label>
+        <Input
+          id="explanationVideoUrl"
+          type="url"
+          value={explanationVideoUrl}
+          onChange={(e) => setExplanationVideoUrl(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=…"
+        />
+        <p className="text-xs text-muted-foreground">
+          A YouTube link embeds a player in the solution; any other link shows a direct video or a "Watch" button.
+        </p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="category">Category</Label>

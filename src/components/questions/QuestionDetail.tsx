@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Markdown } from "@/components/ui/Markdown";
+import { VideoEmbed } from "@/components/quiz/VideoEmbed";
 
 export interface QuestionDetailOption {
   id: string;
@@ -10,7 +12,7 @@ export interface QuestionDetailOption {
 
 export interface QuestionDetailImage {
   id: string;
-  role: "question" | "option";
+  role: "question" | "option" | "answer";
   label: string | null;
   imagePath: string;
 }
@@ -21,6 +23,7 @@ export interface QuestionDetailValues {
   language: "en" | "si";
   category: string | null;
   correctOptionLabel: string | null;
+  explanationVideoUrl: string | null;
   options: QuestionDetailOption[];
   images: QuestionDetailImage[];
 }
@@ -31,12 +34,14 @@ export function QuestionDetail({
   language,
   category,
   correctOptionLabel,
+  explanationVideoUrl,
   options,
   images,
 }: QuestionDetailValues) {
   const textClass = cn(language === "si" && "font-sinhala");
   const questionImages = images.filter((img) => img.role === "question");
   const optionImages = images.filter((img) => img.role === "option");
+  const answerImages = images.filter((img) => img.role === "answer");
 
   return (
     <div className="space-y-4">
@@ -80,12 +85,26 @@ export function QuestionDetail({
           ))}
         </div>
       ) : (
-        <div className="rounded-md border border-dashed border-border p-3">
+        <div className="space-y-3 rounded-md border border-dashed border-border p-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Answer</p>
-          <p className={cn("mt-1 text-sm", textClass)}>{answerText}</p>
+          <Markdown className={textClass}>{answerText}</Markdown>
           {correctOptionLabel && (
-            <p className="mt-1 text-xs text-muted-foreground">Correct option: {correctOptionLabel}</p>
+            <p className="text-xs text-muted-foreground">Correct option: {correctOptionLabel}</p>
           )}
+          {answerImages.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {answerImages.map((img) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={img.id}
+                  src={`/api/uploads/questions/${img.imagePath}`}
+                  alt="Solution figure"
+                  className="aspect-square w-full rounded-md border border-border bg-muted object-contain"
+                />
+              ))}
+            </div>
+          )}
+          {explanationVideoUrl && <VideoEmbed url={explanationVideoUrl} />}
         </div>
       )}
 

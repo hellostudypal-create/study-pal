@@ -10,10 +10,16 @@ import { Badge } from "@/components/ui/badge";
 
 export interface QuestionImageItem {
   id: string;
-  role: "question" | "option";
+  role: "question" | "option" | "answer";
   label: string | null;
   imagePath: string;
 }
+
+const ROLE_LABELS: Record<QuestionImageItem["role"], string> = {
+  question: "Question",
+  option: "Option",
+  answer: "Answer",
+};
 
 export function QuestionImages({
   questionId,
@@ -24,7 +30,7 @@ export function QuestionImages({
 }) {
   const router = useRouter();
   const [images, setImages] = useState(initialImages);
-  const [role, setRole] = useState<"question" | "option">("question");
+  const [role, setRole] = useState<QuestionImageItem["role"]>("question");
   const [label, setLabel] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +94,7 @@ export function QuestionImages({
               />
               <div className="flex items-center justify-between gap-1 p-1.5">
                 <Badge variant="outline" className="text-[10px]">
-                  {img.role === "option" ? `Option ${img.label ?? ""}` : "Question"}
+                  {img.role === "option" ? `Option ${img.label ?? ""}` : ROLE_LABELS[img.role]}
                 </Badge>
                 <button
                   type="button"
@@ -110,10 +116,11 @@ export function QuestionImages({
             <Select
               id="role"
               value={role}
-              onChange={(e) => setRole(e.target.value as "question" | "option")}
+              onChange={(e) => setRole(e.target.value as QuestionImageItem["role"])}
             >
               <option value="question">Question figure</option>
               <option value="option">Answer option</option>
+              <option value="answer">Solution / explanation</option>
             </Select>
           </div>
           {role === "option" && (

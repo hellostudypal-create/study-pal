@@ -77,6 +77,7 @@ export async function POST(req: Request) {
       answerText: q.answerText,
       language: q.language,
       correctOptionLabel: q.correctOptionLabel,
+      explanationVideoUrl: q.explanationVideoUrl,
       options: hasMcqOptions(q.id)
         ? optionsByQuestion.get(q.id)!.map((o) => ({ label: o.label, text: o.text }))
         : null,
