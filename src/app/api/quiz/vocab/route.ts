@@ -3,10 +3,12 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { assembleVocabQuiz, pickDistractors } from "@/lib/quiz-assembly";
+import { assertEntitled } from "@/lib/authz";
 import type { VocabWord } from "@prisma/client";
 
 const bodySchema = z.object({
   count: z.number().int().min(1).max(50).default(10),
+  bankId: z.string().uuid().optional(),
 });
 
 export async function POST(req: Request) {
@@ -16,8 +18,13 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(body);
   const count = parsed.success ? parsed.data.count : 10;
+  const bankId = parsed.success ? parsed.data.bankId : undefined;
 
-  const words = await assembleVocabQuiz(userId, count);
+  if (bankId && !(await assertEntitled(userId, bankId))) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const words = await assembleVocabQuiz(userId, count, bankId);
   if (words.length === 0) {
     return NextResponse.json(
       { error: "No vocabulary words yet — add some first." },
@@ -28,7 +35,7 @@ export async function POST(req: Request) {
   const items: { word: VocabWord; options: string[] | null }[] = [];
   for (const word of words) {
     const distractors = word.definition
-      ? await pickDistractors(userId, word.id)
+      ? await pickDistractors(userId, word.id, 3, bankId)
       : null;
 
     let options: string[] | null = null;
@@ -56,6 +63,7 @@ export async function POST(req: Request) {
           vocabWordId: item.word.id,
           order,
           boxLevelBefore: item.word.boxLevel,
+          answerKind: item.options !== null ? "verified_choice" : "self_assessed",
         })),
       },
     },

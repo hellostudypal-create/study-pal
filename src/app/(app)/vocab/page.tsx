@@ -1,56 +1,66 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { getEntitledBankIds } from "@/lib/authz";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
 
 export default async function VocabListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; book?: string; page?: string }>;
 }) {
   const params = await searchParams;
   const userId = await getCurrentUserId();
   const q = params.q?.trim() ?? "";
+  const book = params.book?.trim() || undefined;
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
 
-  const where = userId
-    ? {
-        userId,
-        ...(q
-          ? {
-              OR: [
-                { term: { contains: q, mode: "insensitive" as const } },
-                { definition: { contains: q, mode: "insensitive" as const } },
-              ],
-            }
-          : {}),
-      }
-    : { userId: "" };
+  const bankIds = userId ? await getEntitledBankIds(userId, "vocab") : [];
+  const where = {
+    bankId: { in: bankIds },
+    ...(book ? { bookId: book } : {}),
+    ...(q
+      ? {
+          OR: [
+            { term: { contains: q, mode: "insensitive" as const } },
+            { definition: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
 
-  const [words, total, totalUnfiltered] = userId
+  const [words, total, totalUnfiltered, books] = userId
     ? await Promise.all([
         db.vocabWord.findMany({
           where,
           orderBy: { createdAt: "desc" },
           skip: (page - 1) * PAGE_SIZE,
           take: PAGE_SIZE,
+          include: { book: { select: { title: true } } },
         }),
         db.vocabWord.count({ where }),
-        db.vocabWord.count({ where: { userId } }),
+        db.vocabWord.count({ where: { bankId: { in: bankIds } } }),
+        db.book.findMany({
+          where: { words: { some: { bankId: { in: bankIds } } } },
+          orderBy: { title: "asc" },
+          select: { id: true, title: true },
+        }),
       ])
-    : [[], 0, 0];
+    : [[], 0, 0, []];
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const isFiltered = !!q;
+  const isFiltered = !!(q || book);
 
   function pageHref(targetPage: number) {
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
+    if (book) sp.set("book", book);
     if (targetPage > 1) sp.set("page", String(targetPage));
     const qs = sp.toString();
     return qs ? `/vocab?${qs}` : "/vocab";
@@ -71,10 +81,20 @@ export default async function VocabListPage({
         </Link>
       </div>
 
-      <form className="flex gap-2" action="/vocab">
+      <form className="flex flex-col gap-2 sm:flex-row" action="/vocab">
         <Input name="q" defaultValue={q} placeholder="Search words or definitions…" className="flex-1" />
+        {books.length > 0 && (
+          <Select name="book" defaultValue={book ?? ""} className="sm:w-56">
+            <option value="">Any book</option>
+            {books.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.title}
+              </option>
+            ))}
+          </Select>
+        )}
         <button type="submit" className={buttonVariants({ variant: "secondary" })}>
-          Search
+          Filter
         </button>
         {isFiltered && (
           <Link href="/vocab" className={buttonVariants({ variant: "ghost" })}>
@@ -107,18 +127,25 @@ export default async function VocabListPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold">{word.term}</h3>
-                      <Badge variant={word.boxLevel === 0 ? "outline" : "secondary"}>
-                        {word.boxLevel === 0 ? "New" : `Level ${word.boxLevel}`}
-                      </Badge>
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold",
+                          word.boxLevel === 0 && "bg-secondary text-muted-foreground",
+                          word.boxLevel > 0 && word.boxLevel < 5 && "bg-primary-tint text-primary",
+                          word.boxLevel === 5 && "bg-gold-tint text-gold-ink"
+                        )}
+                      >
+                        {word.boxLevel === 0 ? "New" : word.boxLevel === 5 ? "Mastered" : `Level ${word.boxLevel}`}
+                      </span>
                     </div>
                     {word.definition && (
                       <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
                         {word.definition}
                       </p>
                     )}
-                    {word.sourceBook && (
+                    {word.book && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        From: {word.sourceBook}
+                        From: {word.book.title}
                       </p>
                     )}
                   </CardContent>

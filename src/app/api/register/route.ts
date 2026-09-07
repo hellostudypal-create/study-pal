@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { getOrCreatePersonalBank } from "@/lib/authz";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -40,6 +41,9 @@ export async function POST(req: Request) {
     },
     select: { id: true, email: true },
   });
+
+  await getOrCreatePersonalBank(user.id, "exam");
+  await getOrCreatePersonalBank(user.id, "vocab");
 
   return NextResponse.json({ user }, { status: 201 });
 }

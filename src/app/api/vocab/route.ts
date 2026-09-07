@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
+import { assertCanEditBank, getEntitledBankIds, getOrCreatePersonalBank } from "@/lib/authz";
 
 const createSchema = z.object({
   term: z.string().min(1).max(200),
   definition: z.string().max(2000).optional(),
   exampleSentence: z.string().max(2000).optional(),
-  sourceBook: z.string().max(300).optional(),
+  bookId: z.string().uuid().nullable().optional(),
+  bankId: z.string().uuid().optional(),
 });
 
 export async function GET(req: Request) {
@@ -16,10 +18,14 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.trim();
+  const bankId = searchParams.get("bankId")?.trim();
+
+  const entitledBankIds = await getEntitledBankIds(userId, "vocab");
+  const bankFilter = bankId && entitledBankIds.includes(bankId) ? [bankId] : entitledBankIds;
 
   const words = await db.vocabWord.findMany({
     where: {
-      userId,
+      bankId: { in: bankFilter },
       ...(q
         ? {
             OR: [
@@ -48,8 +54,14 @@ export async function POST(req: Request) {
     );
   }
 
+  const { bankId: requestedBankId, ...data } = parsed.data;
+  const bankId = requestedBankId ?? (await getOrCreatePersonalBank(userId, "vocab")).id;
+
+  const bank = await assertCanEditBank(userId, bankId);
+  if (!bank) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   const word = await db.vocabWord.create({
-    data: { ...parsed.data, userId },
+    data: { ...data, bankId },
   });
 
   return NextResponse.json({ word }, { status: 201 });

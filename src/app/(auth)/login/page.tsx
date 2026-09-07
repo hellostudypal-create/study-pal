@@ -75,7 +75,11 @@ export default function LoginPage() {
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-br from-primary to-primary-2 hover:opacity-90"
+            disabled={loading}
+          >
             {loading ? "Logging in…" : "Log in"}
           </Button>
         </form>
@@ -83,6 +87,16 @@ export default function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-medium text-primary underline-offset-4 hover:underline">
             Sign up
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          <Link href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">
+            Forgot password?
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          <Link href="/store" className="underline-offset-4 hover:underline">
+            Browse available banks
           </Link>
         </p>
       </CardContent>

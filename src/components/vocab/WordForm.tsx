@@ -6,23 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 
 export interface WordFormValues {
   id?: string;
   term: string;
   definition: string;
   exampleSentence: string;
-  sourceBook: string;
+  bookId: string;
 }
 
-export function WordForm({ initial }: { initial?: WordFormValues }) {
+export interface WordFormBookOption {
+  id: string;
+  title: string;
+}
+
+export function WordForm({
+  initial,
+  books = [],
+  bankId,
+}: {
+  initial?: WordFormValues;
+  books?: WordFormBookOption[];
+  bankId?: string;
+}) {
   const router = useRouter();
   const isEdit = !!initial?.id;
 
   const [term, setTerm] = useState(initial?.term ?? "");
   const [definition, setDefinition] = useState(initial?.definition ?? "");
   const [exampleSentence, setExampleSentence] = useState(initial?.exampleSentence ?? "");
-  const [sourceBook, setSourceBook] = useState(initial?.sourceBook ?? "");
+  const [bookId, setBookId] = useState(initial?.bookId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -42,7 +56,8 @@ export function WordForm({ initial }: { initial?: WordFormValues }) {
         term,
         definition: definition || undefined,
         exampleSentence: exampleSentence || undefined,
-        sourceBook: sourceBook || undefined,
+        bookId: bookId || null,
+        ...(isEdit ? {} : { bankId }),
       }),
     });
 
@@ -54,7 +69,7 @@ export function WordForm({ initial }: { initial?: WordFormValues }) {
       return;
     }
 
-    router.push("/vocab");
+    router.push(!isEdit && bankId ? `/manage/banks/${bankId}` : "/vocab");
     router.refresh();
   }
 
@@ -107,13 +122,15 @@ export function WordForm({ initial }: { initial?: WordFormValues }) {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="sourceBook">Source book</Label>
-        <Input
-          id="sourceBook"
-          value={sourceBook}
-          onChange={(e) => setSourceBook(e.target.value)}
-          placeholder="Which book was this from?"
-        />
+        <Label htmlFor="bookId">Book</Label>
+        <Select id="bookId" value={bookId} onChange={(e) => setBookId(e.target.value)}>
+          <option value="">No book</option>
+          {books.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.title}
+            </option>
+          ))}
+        </Select>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 pt-2">
