@@ -20,19 +20,13 @@ export default async function QuizHubPage() {
       <h1 className="text-2xl font-bold tracking-tight">Quiz</h1>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Link
-          href="/quiz/vocab"
-          className="rounded-md bg-gradient-to-br from-primary-2 to-primary p-6 text-white transition-transform hover:scale-[1.02]"
-        >
-          <BookOpen className="h-6 w-6" />
+        <Link href="/quiz/vocab" className="rounded-md bg-brand p-6 text-brand-foreground transition-opacity hover:opacity-90">
+          <BookOpen className="h-6 w-6 text-gold" />
           <p className="mt-3 text-lg font-bold">Vocabulary Quiz</p>
           <p className="mt-1 text-sm opacity-90">Words you got wrong before come back first.</p>
         </Link>
-        <Link
-          href="/quiz/exam"
-          className="rounded-md bg-gradient-to-br from-gold-surface to-gold-surface-2 p-6 text-white transition-transform hover:scale-[1.02]"
-        >
-          <HelpCircle className="h-6 w-6" />
+        <Link href="/quiz/exam" className="rounded-md bg-brand-2 p-6 text-brand-foreground transition-opacity hover:opacity-90">
+          <HelpCircle className="h-6 w-6 text-gold" />
           <p className="mt-3 text-lg font-bold">Question Bank Quiz</p>
           <p className="mt-1 text-sm opacity-90">Reveal the answer, then mark yourself right or wrong.</p>
         </Link>
@@ -45,7 +39,7 @@ export default async function QuizHubPage() {
           banks={vocabBanks}
           quizHref={(id) => `/quiz/vocab?bankId=${id}`}
           icon={BookOpen}
-          gradient="from-primary-2 to-primary"
+          accentClassName="bg-brand"
           countLabel="words"
         />
       )}
@@ -57,7 +51,7 @@ export default async function QuizHubPage() {
           banks={examBanks}
           quizHref={(id) => `/quiz/exam?bankId=${id}`}
           icon={HelpCircle}
-          gradient="from-gold-surface to-gold-surface-2"
+          accentClassName="bg-brand-2"
           countLabel="questions"
         />
       )}
@@ -82,7 +76,7 @@ function BankSection({
   banks,
   quizHref,
   icon: Icon,
-  gradient,
+  accentClassName,
   countLabel,
 }: {
   title: string;
@@ -90,7 +84,7 @@ function BankSection({
   banks: BankWithCount[];
   quizHref: (id: string) => string;
   icon: typeof BookOpen;
-  gradient: string;
+  accentClassName: string;
   countLabel: string;
 }) {
   return (
@@ -110,7 +104,7 @@ function BankSection({
               <BankCardContent
                 bank={{ id: bank.id, title: bank.title, subtitle, count, countLabel }}
                 icon={Icon}
-                gradient={gradient}
+                accentClassName={accentClassName}
               />
             </Link>
           );

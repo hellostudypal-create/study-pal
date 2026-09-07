@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { Logo } from "@/components/brand/Logo";
 
 export default async function StoreLayout({
   children,
@@ -12,11 +13,8 @@ export default async function StoreLayout({
     <div className="min-h-screen">
       <header className="border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-8">
-          <Link href="/store" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-2 text-sm font-extrabold text-primary-foreground shadow-lg shadow-primary/30">
-              S
-            </div>
-            <span className="text-lg font-extrabold tracking-tight">Study Pal</span>
+          <Link href="/store">
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             {session?.user ? (

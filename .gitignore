@@ -9,3 +9,4 @@ uploads/*
 samples/
 .claude/settings.local.json
 *.tsbuildinfo
+_branding

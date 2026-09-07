@@ -152,7 +152,7 @@ function VocabQuizPageInner() {
                   onClick={() => startQuiz(bank.id)}
                   className={bankCardClassName}
                 >
-                  <BankCardContent bank={bank} icon={BookOpen} gradient="from-primary-2 to-primary" />
+                  <BankCardContent bank={bank} icon={BookOpen} accentClassName="bg-brand" />
                 </button>
               ))}
             </div>
