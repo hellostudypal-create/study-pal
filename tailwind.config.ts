@@ -25,6 +25,11 @@ const config: Config = {
           foreground: "hsl(var(--primary-foreground))",
           tint: "hsl(var(--primary-tint))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          2: "hsl(var(--brand-2))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -52,8 +57,6 @@ const config: Config = {
           foreground: "hsl(var(--gold-foreground))",
           ink: "hsl(var(--gold-ink))",
           tint: "hsl(var(--gold-tint))",
-          surface: "hsl(var(--gold-surface))",
-          "surface-2": "hsl(var(--gold-surface-2))",
         },
         success: {
           DEFAULT: "hsl(var(--success))",

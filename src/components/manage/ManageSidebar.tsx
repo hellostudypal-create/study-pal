@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Library, Users, BookOpen, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
+import { LogoBadge } from "@/components/brand/Logo";
 
 const navItems = [
   { href: "/manage", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -21,9 +22,7 @@ export function ManageSidebar() {
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-60 flex-col border-r border-border bg-background-2 p-4 lg:flex">
         <div className="flex items-center justify-between px-2 pb-6">
           <Link href="/manage" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-2 text-sm font-extrabold text-primary-foreground shadow-lg shadow-primary/30">
-              S
-            </div>
+            <LogoBadge />
             <span className="text-lg font-extrabold tracking-tight">Manage</span>
           </Link>
           <ThemeToggle />
@@ -39,7 +38,7 @@ export function ManageSidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-semibold transition-colors",
                   active
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/35"
+                    ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-secondary"
                 )}
               >

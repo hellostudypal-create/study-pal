@@ -152,7 +152,7 @@ function ExamQuizPageInner() {
                   onClick={() => startQuiz(bank.id)}
                   className={bankCardClassName}
                 >
-                  <BankCardContent bank={bank} icon={HelpCircle} gradient="from-gold-surface to-gold-surface-2" />
+                  <BankCardContent bank={bank} icon={HelpCircle} accentClassName="bg-brand-2" />
                 </button>
               ))}
             </div>

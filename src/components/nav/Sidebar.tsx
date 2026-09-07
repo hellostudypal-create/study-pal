@@ -6,6 +6,7 @@ import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/nav/BottomNav";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
+import { Logo } from "@/components/brand/Logo";
 
 export function Sidebar({
   userName,
@@ -21,12 +22,7 @@ export function Sidebar({
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-60 flex-col border-r border-border bg-background-2 p-4 lg:flex">
       <div className="flex items-center justify-between px-2 pb-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-2 text-sm font-extrabold text-primary-foreground shadow-lg shadow-primary/30">
-            S
-          </div>
-          <span className="text-lg font-extrabold tracking-tight">Study Pal</span>
-        </div>
+        <Logo />
         <ThemeToggle />
       </div>
 
@@ -40,7 +36,7 @@ export function Sidebar({
               className={cn(
                 "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-semibold transition-colors",
                 active
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/35"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-secondary"
               )}
             >
@@ -55,7 +51,7 @@ export function Sidebar({
             className={cn(
               "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-semibold transition-colors",
               pathname.startsWith("/manage")
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/35"
+                ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-secondary"
             )}
           >
@@ -66,7 +62,7 @@ export function Sidebar({
       </nav>
 
       <div className="flex items-center gap-2.5 border-t border-border px-2 pt-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gold-surface to-gold-surface-2 text-xs font-bold text-white">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold text-xs font-bold text-brand">
           {userName?.slice(0, 2).toUpperCase() ?? "?"}
         </div>
         <div className="min-w-0 flex-1">

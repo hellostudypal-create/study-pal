@@ -88,7 +88,7 @@ export default async function StoreBankPage({
               href={buildWhatsAppLink(bank.title)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex rounded-md bg-gradient-to-br from-primary to-primary-2 px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+              className="inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Interested? Message us on WhatsApp
             </a>
