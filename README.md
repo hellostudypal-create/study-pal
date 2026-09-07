@@ -2,8 +2,7 @@
 
 StudyPal is a family study-prep web app. It stores exam-style questions and vocabulary words in "banks," runs them through a spaced-repetition (Leitner box) quiz engine, and tracks each learner's progress over time. It also has a small storefront so banks can be sold/shared, and an admin area for managing content, users, and access.
 
-Originally built for Sri Lankan exam prep (Grade 5 Scholarship, O/L, A/L, government admin exams, IQ tests), plus general vocabulary building. Prices are in LKR and purchase enquiries go out via WhatsApp.
-
+Originally built for Sri Lankan exam prep (Grade 5 Scholarship, O/L, A/L, government admin exams, IQ tests), plus general vocabulary building. Prices are in LKR and purchase enquiries go out via WhatsAp
 ## What it does today
 
 **Content model**
