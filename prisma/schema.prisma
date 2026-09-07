@@ -15,22 +15,55 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  displayName  String?  @map("display_name")
-  role         Role     @default(customer)
-  createdAt    DateTime @default(now()) @map("created_at")
+  id                 String   @id @default(uuid())
+  email              String   @unique
+  passwordHash       String   @map("password_hash")
+  displayName        String?  @map("display_name")
+  role               Role     @default(customer)
+  mustChangePassword Boolean  @default(false) @map("must_change_password")
+  createdAt          DateTime @default(now()) @map("created_at")
 
   vocabWords          VocabWord[]
   examQuestions       ExamQuestion[]
   quizzes             Quiz[]
-  ownedBanks          Bank[]         @relation("BankOwner")
+  ownedBanks          Bank[]             @relation("BankOwner")
   entitlements        Entitlement[]
   editableBanks       BankEditor[]
-  grantedEntitlements Entitlement[]  @relation("GrantedBy")
+  grantedEntitlements Entitlement[]      @relation("GrantedBy")
+  invitationTokens    InvitationToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+model InvitationToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("invitation_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 enum BankKind {
