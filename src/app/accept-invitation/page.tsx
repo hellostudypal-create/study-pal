@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function AcceptInvitationPage() {
-
+function AcceptInvitationForm() {
   const params = useSearchParams();
   const token = useMemo(() => params.get("token") ?? "", [params]);
   const [password, setPassword] = useState("");
@@ -120,5 +119,13 @@ export default function AcceptInvitationPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AcceptInvitationPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-lg py-12"><Card><CardContent className="p-6 text-sm text-muted-foreground">Loading…</CardContent></Card></div>}>
+      <AcceptInvitationForm />
+    </Suspense>
   );
 }
