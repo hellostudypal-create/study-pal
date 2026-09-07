@@ -5,8 +5,16 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const isPublic = isAuthPage || pathname === "/" || pathname.startsWith("/store");
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password";
+  const isPublic =
+    isAuthPage ||
+    pathname === "/" ||
+    pathname.startsWith("/store") ||
+    pathname === "/accept-invitation";
 
   if (!isLoggedIn && !isPublic) {
     const loginUrl = new URL("/login", req.nextUrl.origin);

@@ -58,6 +58,7 @@ export default async function QuestionPage({
               language={question.language}
               category={question.category}
               correctOptionLabel={question.correctOptionLabel}
+              explanationVideoUrl={question.explanationVideoUrl}
               options={options}
               images={images}
             />
@@ -83,6 +84,7 @@ export default async function QuestionPage({
               language: question.language,
               category: question.category ?? "",
               correctOptionLabel: question.correctOptionLabel ?? "",
+              explanationVideoUrl: question.explanationVideoUrl ?? "",
               options,
             }}
           />

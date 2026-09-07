@@ -29,7 +29,9 @@ export async function POST(
   if (!form) return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
 
   const file = form.get("file");
-  const role = (form.get("role") as string) === "option" ? "option" : "question";
+  const requestedRole = form.get("role") as string;
+  const role =
+    requestedRole === "option" || requestedRole === "answer" ? requestedRole : "question";
   const label = (form.get("label") as string) || null;
 
   if (!(file instanceof File)) {

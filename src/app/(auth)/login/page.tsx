@@ -90,6 +90,11 @@ export default function LoginPage() {
           </Link>
         </p>
         <p className="mt-2 text-center text-sm text-muted-foreground">
+          <Link href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">
+            Forgot password?
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           <Link href="/store" className="underline-offset-4 hover:underline">
             Browse available banks
           </Link>

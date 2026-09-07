@@ -23,6 +23,7 @@ const updateSchema = z.object({
   language: z.enum(["en", "si"]).optional(),
   category: z.string().max(200).nullable().optional(),
   correctOptionLabel: z.string().max(10).nullable().optional(),
+  explanationVideoUrl: z.string().trim().url().max(500).nullable().optional(),
   options: optionsSchema.nullable().optional(),
 });
 

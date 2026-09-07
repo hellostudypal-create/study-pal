@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function ManageUsersPage() {
   const users = await db.user.findMany({
@@ -16,7 +17,12 @@ export default async function ManageUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+        <Link href="/manage/users/new" className={buttonVariants()}>
+          + New user
+        </Link>
+      </div>
 
       <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <table className="w-full text-sm">
