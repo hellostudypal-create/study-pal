@@ -1,5 +1,7 @@
 import { ManageSidebar } from "@/components/manage/ManageSidebar";
 
+export const dynamic = "force-dynamic";
+
 export default function ManageLayout({
   children,
 }: {
