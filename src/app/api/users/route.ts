@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { sendInvitationEmail } from "@/lib/mailer";
 import { generateToken, hashToken } from "@/lib/token";
 
 const createSchema = z.object({
@@ -68,20 +67,12 @@ export async function POST(req: Request) {
     return { user, token };
   });
 
-  try {
-    await sendInvitationEmail(created.user.email, created.token);
-  } catch (error) {
-    console.error("Invitation email failed", error);
-  }
-
-  const isDev = process.env.NODE_ENV !== "production";
-  const baseUrl = process.env.APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-
   return NextResponse.json(
     {
-      message: "User created and invitation sent.",
+      message: "User created.",
       user: created.user,
-      invitationUrl: isDev ? `${baseUrl.replace(/\/$/, "")}/accept-invitation?token=${encodeURIComponent(created.token)}` : undefined,
+      email: created.user.email,
+      token: created.token,
     },
     { status: 201 }
   );

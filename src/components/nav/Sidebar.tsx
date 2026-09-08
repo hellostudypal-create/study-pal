@@ -2,84 +2,135 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/nav/BottomNav";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
+import { LanguageToggle } from "@/components/nav/LanguageToggle";
+import { Logo, LogoBadge } from "@/components/brand/Logo";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export function Sidebar({
   userName,
   signOutAction,
   isAdmin,
+  collapsed = false,
+  onToggle,
 }: {
   userName: string | null | undefined;
   signOutAction: () => Promise<void>;
   isAdmin: boolean;
+  collapsed?: boolean;
+  onToggle?: () => void;
 }) {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-60 flex-col border-r border-border bg-background-2 p-4 lg:flex">
-      <div className="flex items-center justify-between px-2 pb-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-2 text-sm font-extrabold text-primary-foreground shadow-lg shadow-primary/30">
-            S
+    <aside
+      className={cn(
+        "fixed inset-y-0 left-0 z-10 hidden flex-col border-r border-border bg-background-2 p-4 lg:flex",
+        collapsed ? "w-[72px]" : "w-60"
+      )}
+    >
+      {onToggle && (
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={collapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
+          className="absolute -right-3 top-6 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm hover:text-foreground"
+        >
+          {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+        </button>
+      )}
+
+      <div className={cn("flex items-center pb-6", collapsed ? "justify-center px-0" : "justify-between px-2")}>
+        {collapsed ? <LogoBadge /> : <Logo textClassName="text-base font-extrabold tracking-tight" />}
+        {!collapsed && (
+          <div className="flex shrink-0 items-center gap-0.5">
+            <LanguageToggle className="h-7 w-7" />
+            <ThemeToggle className="h-7 w-7" />
           </div>
-          <span className="text-lg font-extrabold tracking-tight">Study Pal</span>
-        </div>
-        <ThemeToggle />
+        )}
       </div>
 
+      {collapsed && (
+        <div className="flex flex-col items-center gap-1 pb-4">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
+      )}
+
       <nav className="flex flex-1 flex-col gap-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, key, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
               key={href}
               href={href}
+              title={collapsed ? t(`nav.${key}`) : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-semibold transition-colors",
+                collapsed && "justify-center px-0",
                 active
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/35"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-secondary"
               )}
             >
               <Icon className="h-[19px] w-[19px] shrink-0" />
-              {label}
+              {!collapsed && t(`nav.${key}`)}
             </Link>
           );
         })}
         {isAdmin && (
           <Link
             href="/manage"
+            title={collapsed ? t("nav.manage") : undefined}
             className={cn(
               "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-semibold transition-colors",
+              collapsed && "justify-center px-0",
               pathname.startsWith("/manage")
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/35"
+                ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-secondary"
             )}
           >
             <Settings className="h-[19px] w-[19px] shrink-0" />
-            Manage
+            {!collapsed && t("nav.manage")}
           </Link>
         )}
       </nav>
 
-      <div className="flex items-center gap-2.5 border-t border-border px-2 pt-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gold-surface to-gold-surface-2 text-xs font-bold text-white">
-          {userName?.slice(0, 2).toUpperCase() ?? "?"}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{userName}</p>
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="text-xs text-muted-foreground hover:text-foreground hover:underline"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+      <div
+        className={cn(
+          "flex items-center gap-1.5 border-t border-border pt-4",
+          collapsed ? "flex-col px-0" : "px-2"
+        )}
+      >
+        <Link
+          href="/account"
+          title={collapsed ? t("account.title") : undefined}
+          className={cn(
+            "flex min-w-0 items-center gap-2.5 rounded-md py-1 hover:bg-secondary",
+            collapsed ? "justify-center px-1" : "flex-1 px-1"
+          )}
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold text-xs font-bold text-brand">
+            {userName?.slice(0, 2).toUpperCase() ?? "?"}
+          </div>
+          {!collapsed && <p className="min-w-0 truncate text-sm font-semibold">{userName}</p>}
+        </Link>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            title={t("nav.signOut")}
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground",
+              collapsed ? "h-7 w-7" : "h-8 w-8"
+            )}
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </form>
       </div>
     </aside>
   );

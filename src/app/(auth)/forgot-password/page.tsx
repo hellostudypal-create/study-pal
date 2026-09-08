@@ -13,6 +13,37 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+async function sendResetMail(email: string, token: string) {
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+  const resetUrl = `${appUrl.replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(token)}`;
+  const mailBaseUrl = process.env.NEXT_PUBLIC_MAIL_BASE_URL ?? "http://localhost:4000";
+  const apiKey = process.env.NEXT_PUBLIC_STUDY_PAL_API_KEY ?? "";
+
+  const res = await fetch(`${mailBaseUrl}/study-pal-mailer/send`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+    },
+    body: JSON.stringify({
+      to: email,
+      subject: "Reset your StudyPal password",
+      html: `
+        <h2>Reset your password</h2>
+        <p>We received a request to reset the password for your StudyPal account.</p>
+        <p>Click the button below to choose a new password.</p>
+        <p><a href="${resetUrl}" style="display:inline-block;padding:10px 16px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;">Reset password</a></p>
+        <p>This link expires in 60 minutes.</p>
+        <p>If you did not request this, you can safely ignore this email.</p>
+      `,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to send password reset email");
+  }
+}
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +67,18 @@ export default function ForgotPasswordPage() {
       const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Something went wrong");
       return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    const payloadEmail = typeof data.email === "string" ? data.email : undefined;
+    const payloadToken = typeof data.token === "string" ? data.token : undefined;
+
+    if (payloadEmail && payloadToken) {
+      try {
+        await sendResetMail(payloadEmail, payloadToken);
+      } catch (mailError) {
+        console.error("Password reset email failed", mailError);
+      }
     }
 
     setSent(true);

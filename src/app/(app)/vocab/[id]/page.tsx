@@ -7,6 +7,7 @@ import { WordForm } from "@/components/vocab/WordForm";
 import { WordDetail } from "@/components/vocab/WordDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function WordPage({
   params,
@@ -15,6 +16,7 @@ export default async function WordPage({
 }) {
   const { id } = await params;
   const userId = await getCurrentUserId();
+  const t = await getT();
 
   // Check edit rights first: admins/owners/content editors can always
   // manage a bank's words even without a personal purchase entitlement
@@ -39,7 +41,7 @@ export default async function WordPage({
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">{word.term}</h1>
           <Link href="/vocab" className={buttonVariants({ variant: "ghost" })}>
-            Back to vocabulary
+            {t("vocab.backToVocab")}
           </Link>
         </div>
         <Card>
@@ -63,7 +65,7 @@ export default async function WordPage({
       <h1 className="text-2xl font-bold tracking-tight">{word.term}</h1>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Edit entry</CardTitle>
+          <CardTitle className="text-base">{t("vocab.editEntry")}</CardTitle>
         </CardHeader>
         <CardContent>
           <WordForm

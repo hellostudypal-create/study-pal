@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { Logo } from "@/components/brand/Logo";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function StoreLayout({
   children,
@@ -7,16 +9,14 @@ export default async function StoreLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const t = await getT();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-light-tint">
       <header className="border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-8">
-          <Link href="/store" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-2 text-sm font-extrabold text-primary-foreground shadow-lg shadow-primary/30">
-              S
-            </div>
-            <span className="text-lg font-extrabold tracking-tight">Study Pal</span>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
+          <Link href="/store">
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             {session?.user ? (
@@ -26,7 +26,7 @@ export default async function StoreLayout({
                   href="/dashboard"
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 >
-                  Dashboard
+                  {t("store.dashboard")}
                 </Link>
               </>
             ) : (
@@ -35,20 +35,20 @@ export default async function StoreLayout({
                   href="/login"
                   className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                 >
-                  Log in
+                  {t("store.logIn")}
                 </Link>
                 <Link
                   href="/signup"
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 >
-                  Sign up
+                  {t("store.signUp")}
                 </Link>
               </>
             )}
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8">{children}</main>
     </div>
   );
 }

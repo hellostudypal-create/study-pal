@@ -48,7 +48,7 @@ export default function LoginPage() {
     <Card>
       <CardHeader>
         <CardTitle>Log in</CardTitle>
-        <CardDescription>Welcome back — pick up where you left off.</CardDescription>
+        <CardDescription>Welcome back..! pick up where you left off.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -77,7 +77,7 @@ export default function LoginPage() {
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-br from-primary to-primary-2 hover:opacity-90"
+            className="w-full"
             disabled={loading}
           >
             {loading ? "Logging in…" : "Log in"}

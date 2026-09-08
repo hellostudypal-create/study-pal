@@ -3,10 +3,12 @@ import { BookOpen, HelpCircle } from "lucide-react";
 import { auth, getCurrentUserId } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getEntitledBankIds } from "@/lib/authz";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = await getCurrentUserId();
+  const t = await getT();
   const now = new Date();
 
   const [vocabCount, questionCount, vocabDue, examDue] = userId
@@ -29,45 +31,36 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-primary to-primary-2 p-6 text-primary-foreground">
-        <div className="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-white/10" />
-        <h1 className="relative text-2xl font-extrabold tracking-tight">Hi, {firstName}</h1>
-        <p className="relative mt-1 text-sm opacity-90">
-          {dueTotal > 0
-            ? "You've got items waiting for review."
-            : "Nothing due today — great time to add something new."}
+      <div className="rounded-lg bg-brand p-6 text-brand-foreground">
+        <h1 className="text-2xl font-extrabold tracking-tight">{t("dashboard.greeting", { name: firstName ?? "" })}</h1>
+        <p className="mt-1 text-sm opacity-90">
+          {dueTotal > 0 ? t("dashboard.dueMessage") : t("dashboard.emptyMessage")}
         </p>
         {dueTotal > 0 && (
-          <div className="relative mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
-            ✦ {dueTotal} item{dueTotal === 1 ? "" : "s"} due today
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
+            <span className="text-gold">✦</span> {t("dashboard.itemsDueToday", { count: dueTotal })}
           </div>
         )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Link
-          href="/quiz/vocab"
-          className="rounded-md bg-gradient-to-br from-primary-2 to-primary p-4 text-white transition-transform hover:scale-[1.02]"
-        >
-          <BookOpen className="h-5 w-5" />
-          <p className="mt-2 font-bold">Vocabulary</p>
-          <p className="text-xs opacity-90">{vocabDue} due · {vocabCount} total</p>
+        <Link href="/quiz/vocab" className="rounded-md bg-brand p-4 text-brand-foreground transition-opacity hover:opacity-90">
+          <BookOpen className="h-5 w-5 text-gold" />
+          <p className="mt-2 font-bold">{t("dashboard.vocabulary")}</p>
+          <p className="text-xs opacity-90">{t("dashboard.dueOfTotal", { due: vocabDue, total: vocabCount })}</p>
         </Link>
-        <Link
-          href="/quiz/exam"
-          className="rounded-md bg-gradient-to-br from-gold-surface to-gold-surface-2 p-4 text-white transition-transform hover:scale-[1.02]"
-        >
-          <HelpCircle className="h-5 w-5" />
-          <p className="mt-2 font-bold">Question Bank</p>
-          <p className="text-xs opacity-90">{examDue} due · {questionCount} total</p>
+        <Link href="/quiz/exam" className="rounded-md bg-brand-2 p-4 text-brand-foreground transition-opacity hover:opacity-90">
+          <HelpCircle className="h-5 w-5 text-gold" />
+          <p className="mt-2 font-bold">{t("dashboard.questionBank")}</p>
+          <p className="text-xs opacity-90">{t("dashboard.dueOfTotal", { due: examDue, total: questionCount })}</p>
         </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatBox value={vocabCount} label="Vocab" />
-        <StatBox value={questionCount} label="Questions" />
-        <StatBox value={vocabDue} label="Vocab due" />
-        <StatBox value={examDue} label="Exam due" />
+        <StatBox value={vocabCount} label={t("dashboard.statVocab")} />
+        <StatBox value={questionCount} label={t("dashboard.statQuestions")} />
+        <StatBox value={vocabDue} label={t("dashboard.statVocabDue")} />
+        <StatBox value={examDue} label={t("dashboard.statExamDue")} />
       </div>
     </div>
   );

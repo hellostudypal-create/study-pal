@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export function QuizLayout({
   index,
@@ -10,7 +11,7 @@ export function QuizLayout({
   prompt,
   solution,
   answerArea,
-  answerAreaLabel = "Your answer",
+  answerAreaLabel,
 }: {
   index: number;
   total: number;
@@ -19,6 +20,7 @@ export function QuizLayout({
   answerArea: React.ReactNode;
   answerAreaLabel?: string;
 }) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<"question" | "solution">("question");
 
   useEffect(() => {
@@ -35,15 +37,15 @@ export function QuizLayout({
       <Card className="overflow-hidden">
         <div className="flex items-center gap-1 border-b border-border px-4">
           <TabButton active={tab === "question"} onClick={() => setTab("question")}>
-            Question
+            {t("quizPlay.questionTab")}
           </TabButton>
           <TabButton active={tab === "solution"} disabled={!solution} onClick={() => solution && setTab("solution")}>
-            Solution
+            {t("quizPlay.solutionTab")}
           </TabButton>
         </div>
         <CardContent className="space-y-3 p-5">
           <span className="inline-flex w-fit items-center rounded-full bg-primary-tint px-3 py-1 text-xs font-bold text-primary">
-            Question {index + 1} of {total}
+            {t("quizPlay.questionOfTotal", { index: index + 1, total })}
           </span>
           {tab === "question" ? prompt : solution}
         </CardContent>
@@ -51,7 +53,9 @@ export function QuizLayout({
 
       <Card className="overflow-hidden">
         <div className="border-b border-border px-4 py-3">
-          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{answerAreaLabel}</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            {answerAreaLabel ?? t("quizPlay.yourAnswer")}
+          </span>
         </div>
         <CardContent className="space-y-3 p-5">{answerArea}</CardContent>
       </Card>

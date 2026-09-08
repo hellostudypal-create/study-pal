@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QuizLayout } from "@/components/quiz/QuizLayout";
 import type { QuizAnswerResult } from "@/components/quiz/types";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface McqItem {
   quizItemId: string;
@@ -27,6 +28,7 @@ export function McqCard({
   total: number;
   onAnswered: (result: QuizAnswerResult) => void;
 }) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
   const [typed, setTyped] = useState("");
   const [revealed, setRevealed] = useState(false);
@@ -58,7 +60,7 @@ export function McqCard({
 
   const solution = revealed ? (
     <div className="rounded-sm bg-muted p-3.5">
-      <span className="text-sm font-semibold">Definition</span>
+      <span className="text-sm font-semibold">{t("quizPlay.definition")}</span>
       <p className="mt-1 text-sm">{item.correctAnswer}</p>
     </div>
   ) : null;
@@ -113,10 +115,10 @@ export function McqCard({
             >
               {wasCorrect ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
             </span>
-            <span className="text-sm font-semibold">{wasCorrect ? "Correct!" : "Not quite"}</span>
+            <span className="text-sm font-semibold">{wasCorrect ? t("quizPlay.correct") : t("quizPlay.notQuite")}</span>
           </div>
           <Button onClick={handleContinue} className="w-full">
-            Continue
+            {t("quizPlay.continueBtn")}
           </Button>
         </>
       )}
@@ -124,24 +126,24 @@ export function McqCard({
   ) : (
     <>
       <Input
-        placeholder="Type the definition"
+        placeholder={t("quizPlay.typeDefinition")}
         value={typed}
         onChange={(e) => setTyped(e.target.value)}
         disabled={revealed}
       />
       {!revealed ? (
         <Button onClick={() => setRevealed(true)} className="w-full" disabled={!typed}>
-          Reveal answer
+          {t("quizPlay.revealAnswer")}
         </Button>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Check the Solution tab, then grade yourself.</p>
+          <p className="text-sm text-muted-foreground">{t("quizPlay.checkSolutionTab")}</p>
           <div className="flex gap-3">
             <Button variant="destructive" className="flex-1" onClick={() => handleTypedSubmit(false)}>
-              I got it wrong
+              {t("quizPlay.gotItWrong")}
             </Button>
             <Button className="flex-1" onClick={() => handleTypedSubmit(true)}>
-              I got it right
+              {t("quizPlay.gotItRight")}
             </Button>
           </div>
         </div>
@@ -156,7 +158,7 @@ export function McqCard({
       prompt={prompt}
       solution={solution}
       answerArea={answerArea}
-      answerAreaLabel={item.options ? "Choose an answer" : "Your answer"}
+      answerAreaLabel={item.options ? t("quizPlay.chooseAnswer") : t("quizPlay.yourAnswer")}
     />
   );
 }

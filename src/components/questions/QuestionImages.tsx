@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface QuestionImageItem {
   id: string;
@@ -14,12 +15,6 @@ export interface QuestionImageItem {
   label: string | null;
   imagePath: string;
 }
-
-const ROLE_LABELS: Record<QuestionImageItem["role"], string> = {
-  question: "Question",
-  option: "Option",
-  answer: "Answer",
-};
 
 export function QuestionImages({
   questionId,
@@ -29,6 +24,12 @@ export function QuestionImages({
   initialImages: QuestionImageItem[];
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
+  const roleLabels: Record<QuestionImageItem["role"], string> = {
+    question: t("questions.roleQuestion"),
+    option: t("questions.roleOption"),
+    answer: t("questions.roleAnswer"),
+  };
   const [images, setImages] = useState(initialImages);
   const [role, setRole] = useState<QuestionImageItem["role"]>("question");
   const [label, setLabel] = useState("");
@@ -58,7 +59,7 @@ export function QuestionImages({
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Upload failed");
+      setError(data.error ?? t("questions.uploadFailed"));
       return;
     }
 
@@ -70,7 +71,7 @@ export function QuestionImages({
   }
 
   async function handleDelete(imageId: string) {
-    if (!confirm("Remove this image?")) return;
+    if (!confirm(t("questions.removeConfirm"))) return;
     const res = await fetch(`/api/questions/${questionId}/images/${imageId}`, {
       method: "DELETE",
     });
@@ -94,14 +95,16 @@ export function QuestionImages({
               />
               <div className="flex items-center justify-between gap-1 p-1.5">
                 <Badge variant="outline" className="text-[10px]">
-                  {img.role === "option" ? `Option ${img.label ?? ""}` : ROLE_LABELS[img.role]}
+                  {img.role === "option"
+                    ? t("questions.optionImageCaption", { label: img.label ?? "" })
+                    : roleLabels[img.role]}
                 </Badge>
                 <button
                   type="button"
                   onClick={() => handleDelete(img.id)}
                   className="text-xs text-destructive hover:underline"
                 >
-                  Remove
+                  {t("questions.remove")}
                 </button>
               </div>
             </div>
@@ -112,32 +115,32 @@ export function QuestionImages({
       <form onSubmit={handleUpload} className="space-y-3 rounded-md border border-dashed border-border p-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="role">Image type</Label>
+            <Label htmlFor="role">{t("questions.imageType")}</Label>
             <Select
               id="role"
               value={role}
               onChange={(e) => setRole(e.target.value as QuestionImageItem["role"])}
             >
-              <option value="question">Question figure</option>
-              <option value="option">Answer option</option>
-              <option value="answer">Solution / explanation</option>
+              <option value="question">{t("questions.questionFigure")}</option>
+              <option value="option">{t("questions.answerOption")}</option>
+              <option value="answer">{t("questions.solutionExplanation")}</option>
             </Select>
           </div>
           {role === "option" && (
             <div className="space-y-1.5">
-              <Label htmlFor="label">Option label</Label>
+              <Label htmlFor="label">{t("questions.optionLabelField")}</Label>
               <Input
                 id="label"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                placeholder="e.g. A"
+                placeholder={t("questions.optionLabelPlaceholder")}
                 maxLength={5}
               />
             </div>
           )}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="file">Image file</Label>
+          <Label htmlFor="file">{t("questions.imageFile")}</Label>
           <input
             id="file"
             name="file"
@@ -149,7 +152,7 @@ export function QuestionImages({
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button type="submit" size="sm" disabled={uploading}>
-          {uploading ? "Uploading…" : "Add image"}
+          {uploading ? t("questions.uploading") : t("questions.addImage")}
         </Button>
       </form>
     </div>

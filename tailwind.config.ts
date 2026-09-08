@@ -17,13 +17,23 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
+        background: {
+          DEFAULT: "hsl(var(--background))",
+          2: "hsl(var(--background-2))",
+        },
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           2: "hsl(var(--primary-2))",
           foreground: "hsl(var(--primary-foreground))",
           tint: "hsl(var(--primary-tint))",
+        },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          2: "hsl(var(--brand-2))",
+          foreground: "hsl(var(--brand-foreground))",
+          light: "hsl(var(--brand-light))",
+          "light-tint": "hsl(var(--brand-light-tint))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -52,8 +62,6 @@ const config: Config = {
           foreground: "hsl(var(--gold-foreground))",
           ink: "hsl(var(--gold-ink))",
           tint: "hsl(var(--gold-tint))",
-          surface: "hsl(var(--gold-surface))",
-          "surface-2": "hsl(var(--gold-surface-2))",
         },
         success: {
           DEFAULT: "hsl(var(--success))",

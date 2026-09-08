@@ -5,14 +5,14 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --background-2: 243 60% 98.5%;
+    --background-2: 271 45% 98.5%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
-    --primary: 243 75% 59%;
-    --primary-2: 262 70% 56%;
+    --primary: 271 60% 34%;
+    --primary-2: 288 55% 46%;
     --primary-foreground: 0 0% 98%;
-    --primary-tint: 243 75% 96%;
+    --primary-tint: 271 55% 96%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
@@ -24,56 +24,68 @@
     --destructive-tint: 0 72% 96%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 243 75% 59%;
-    --radius: 1.5rem;
+    --ring: 271 60% 34%;
+    --radius: 1rem;
 
-    --gold: 38 92% 50%;
-    --gold-2: 32 95% 54%;
+    --gold: 42 96% 50%;
+    --gold-2: 36 95% 54%;
     --gold-foreground: 0 0% 98%;
     --gold-tint: 43 96% 94%;
     --gold-ink: 32 75% 32%;
-    /* Deeper than --gold/--gold-2: those stay bright for text-on-tint use
-       (badges, gradient fill ends); this pair is for solid surfaces that
-       carry white text, dark enough on its own for ~4.5:1 contrast
-       regardless of theme, so it's not redefined below. */
-    --gold-surface: 32 90% 38%;
-    --gold-surface-2: 25 88% 33%;
 
     --success: 152 55% 38%;
     --success-tint: 152 50% 94%;
+
+    /* The logo's own colors: a constant brand purple, unaffected by the
+       light/dark toggle. Reserve for brand-forward flat fills (the logo
+       tile, hero/category banners) — not for interactive text or buttons,
+       which use --primary so they keep reading clearly in dark mode. */
+    --brand: 271 60% 34%;
+    --brand-2: 288 55% 46%;
+    --brand-foreground: 0 0% 98%;
+
+    /* The soft lilac from the brand mockups' backdrop (~#cfbcda). Used at
+       full strength (--brand-light) for decorative fills like hero glow
+       blobs; --brand-light-tint is a lighter wash of the same hue, for
+       page/section backgrounds — visible, but not a solid color block. */
+    --brand-light: 278 32% 74%;
+    --brand-light-tint: 278 32% 95%;
   }
 
   .dark {
-    --background: 245 25% 8%;
-    --background-2: 245 30% 10%;
+    --background: 271 28% 8%;
+    --background-2: 271 30% 10%;
     --foreground: 0 0% 96%;
-    --card: 244 22% 12%;
+    --card: 271 24% 12%;
     --card-foreground: 0 0% 96%;
-    --primary: 243 85% 72%;
-    --primary-2: 262 80% 70%;
-    --primary-foreground: 245 25% 10%;
-    --primary-tint: 243 40% 18%;
-    --secondary: 244 16% 17%;
+    --primary: 271 70% 60%;
+    --primary-2: 288 62% 62%;
+    --primary-foreground: 271 30% 11%;
+    --primary-tint: 271 40% 18%;
+    --secondary: 271 16% 17%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 244 16% 17%;
-    --muted-foreground: 240 8% 68%;
-    --accent: 244 16% 17%;
+    --muted: 271 16% 17%;
+    --muted-foreground: 250 8% 68%;
+    --accent: 271 16% 17%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 63% 40%;
     --destructive-foreground: 0 0% 98%;
     --destructive-tint: 0 45% 18%;
-    --border: 244 16% 20%;
-    --input: 244 16% 20%;
-    --ring: 243 85% 72%;
+    --border: 271 16% 20%;
+    --input: 271 16% 20%;
+    --ring: 271 65% 68%;
 
-    --gold: 40 92% 62%;
-    --gold-2: 34 95% 60%;
+    --gold: 42 95% 65%;
+    --gold-2: 36 95% 62%;
     --gold-foreground: 245 25% 10%;
     --gold-tint: 38 45% 18%;
     --gold-ink: 40 90% 75%;
 
     --success: 152 50% 55%;
     --success-tint: 152 35% 16%;
+
+    --brand-light: 264 28% 30%;
+    --brand-light-tint: 264 25% 13%;
   }
 
   * {
@@ -82,9 +94,6 @@
 
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(ellipse 900px 500px at 15% -5%, hsl(var(--primary) / 0.10), transparent 60%),
-                       radial-gradient(ellipse 700px 500px at 100% 10%, hsl(var(--gold) / 0.08), transparent 55%);
-    background-attachment: fixed;
   }
 }
 

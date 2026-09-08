@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { auth, signOut } from "@/lib/auth";
 import { BottomNav } from "@/components/nav/BottomNav";
-import { Sidebar } from "@/components/nav/Sidebar";
+import { SidebarShell } from "@/components/nav/SidebarShell";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
+import { LanguageToggle } from "@/components/nav/LanguageToggle";
+import { getT } from "@/lib/i18n/translate";
 
 async function signOutAction() {
   "use server";
@@ -16,42 +19,52 @@ export default async function AppLayout({
 }) {
   const session = await auth();
   const isAdmin = session?.user?.role === "admin";
+  const t = await getT();
+  const cookieStore = await cookies();
+  const sidebarCollapsed = cookieStore.get("sidebar-collapsed")?.value === "1";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-light-tint">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <span className="text-lg font-extrabold tracking-tight">Study Pal</span>
+          <span className="text-lg font-extrabold tracking-tight">{t("nav.appName")}</span>
           <div className="flex items-center gap-3">
             {isAdmin && (
               <Link
                 href="/manage"
                 className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
               >
-                Manage
+                {t("nav.manage")}
               </Link>
             )}
-            <span className="text-sm text-muted-foreground">{session?.user?.name}</span>
+            <Link
+              href="/account"
+              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {session?.user?.name}
+            </Link>
+            <LanguageToggle />
             <ThemeToggle />
             <form action={signOutAction}>
               <button
                 type="submit"
                 className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
               >
-                Sign out
+                {t("nav.signOut")}
               </button>
             </form>
           </div>
         </div>
       </header>
 
-      <Sidebar userName={session?.user?.name} signOutAction={signOutAction} isAdmin={isAdmin} />
-
-      <div className="lg:pl-60">
-        <main className="mx-auto max-w-3xl px-4 py-6 pb-20 lg:max-w-5xl lg:px-8 lg:pb-10">
-          {children}
-        </main>
-      </div>
+      <SidebarShell
+        defaultCollapsed={sidebarCollapsed}
+        userName={session?.user?.name}
+        signOutAction={signOutAction}
+        isAdmin={isAdmin}
+      >
+        {children}
+      </SidebarShell>
       <BottomNav />
     </div>
   );

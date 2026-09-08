@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { hashToken, generateToken } from "@/lib/token";
-import { sendPasswordResetEmail } from "@/lib/mailer";
 
 const schema = z.object({
   email: z.string().trim().email(),
@@ -35,11 +34,11 @@ export async function POST(req: Request) {
       },
     });
 
-    try {
-      await sendPasswordResetEmail(user.email, token);
-    } catch (error) {
-      console.error("Password reset email failed", error);
-    }
+    return NextResponse.json({
+      message: "If an account exists for this email, you will receive a password reset link.",
+      email: user.email,
+      token,
+    });
   }
 
   return NextResponse.json({

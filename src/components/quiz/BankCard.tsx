@@ -15,16 +15,16 @@ export const bankCardClassName =
 export function BankCardContent({
   bank,
   icon: Icon,
-  gradient,
+  accentClassName,
 }: {
   bank: BankCardData;
   icon: LucideIcon;
-  gradient: string;
+  accentClassName: string;
 }) {
   return (
     <>
-      <div className={cn("flex h-20 items-center justify-center bg-gradient-to-br text-white", gradient)}>
-        <Icon className="h-7 w-7" />
+      <div className={cn("flex h-20 items-center justify-center", accentClassName)}>
+        <Icon className="h-7 w-7 text-gold" />
       </div>
       <div className="flex flex-1 flex-col p-3">
         <h3 className="line-clamp-1 text-sm font-bold">{bank.title}</h3>

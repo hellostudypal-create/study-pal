@@ -1,7 +1,10 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/Markdown";
 import { VideoEmbed } from "@/components/quiz/VideoEmbed";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface QuestionDetailOption {
   id: string;
@@ -38,6 +41,7 @@ export function QuestionDetail({
   options,
   images,
 }: QuestionDetailValues) {
+  const { t } = useTranslation();
   const textClass = cn(language === "si" && "font-sinhala");
   const questionImages = images.filter((img) => img.role === "question");
   const optionImages = images.filter((img) => img.role === "option");
@@ -79,17 +83,19 @@ export function QuestionDetail({
               <span className="w-5 shrink-0 font-bold">{o.label}</span>
               <span className={textClass}>{o.text}</span>
               {o.isCorrect && (
-                <span className="ml-auto text-xs font-semibold text-success">Correct</span>
+                <span className="ml-auto text-xs font-semibold text-success">{t("questions.correct")}</span>
               )}
             </div>
           ))}
         </div>
       ) : (
         <div className="space-y-3 rounded-md border border-dashed border-border p-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Answer</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("questions.answerHeading")}</p>
           <Markdown className={textClass}>{answerText}</Markdown>
           {correctOptionLabel && (
-            <p className="text-xs text-muted-foreground">Correct option: {correctOptionLabel}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("questions.correctOptionText", { label: correctOptionLabel })}
+            </p>
           )}
           {answerImages.length > 0 && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -118,7 +124,9 @@ export function QuestionDetail({
                 alt={`Option ${img.label ?? ""}`}
                 className="aspect-square w-full bg-muted object-contain"
               />
-              <p className="p-1.5 text-center text-xs font-medium">Option {img.label}</p>
+              <p className="p-1.5 text-center text-xs font-medium">
+                {t("questions.optionImageCaption", { label: img.label ?? "" })}
+              </p>
             </div>
           ))}
         </div>

@@ -103,7 +103,7 @@ export default function SignupPage() {
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-br from-primary to-primary-2 hover:opacity-90"
+            className="w-full"
             disabled={loading}
           >
             {loading ? "Creating account…" : "Sign up"}

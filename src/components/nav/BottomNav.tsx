@@ -4,22 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen, HelpCircle, Trophy, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export const navItems = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/vocab", label: "Vocab", icon: BookOpen },
-  { href: "/questions", label: "Questions", icon: HelpCircle },
-  { href: "/quiz", label: "Quiz", icon: Trophy },
-  { href: "/progress", label: "Progress", icon: BarChart3 },
-];
+  { href: "/dashboard", key: "home", icon: LayoutDashboard },
+  { href: "/vocab", key: "vocab", icon: BookOpen },
+  { href: "/questions", key: "questions", icon: HelpCircle },
+  { href: "/quiz", key: "quiz", icon: Trophy },
+  { href: "/progress", key: "progress", icon: BarChart3 },
+] as const;
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-3xl items-stretch justify-around">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, key, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
@@ -38,7 +40,7 @@ export function BottomNav() {
               >
                 <Icon className="h-5 w-5" />
               </div>
-              {label}
+              {t(`nav.${key}`)}
             </Link>
           );
         })}

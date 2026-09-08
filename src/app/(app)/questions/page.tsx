@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 import type { QuestionLanguage } from "@prisma/client";
+import { getT } from "@/lib/i18n/translate";
 
 const PAGE_SIZE = 20;
 
@@ -20,6 +21,7 @@ export default async function QuestionsListPage({
 }) {
   const params = await searchParams;
   const userId = await getCurrentUserId();
+  const t = await getT();
   const q = params.q?.trim() ?? "";
   const language: QuestionLanguage | undefined =
     params.language === "en" || params.language === "si" ? params.language : undefined;
@@ -78,26 +80,29 @@ export default async function QuestionsListPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Question bank</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("questions.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {totalUnfiltered} {totalUnfiltered === 1 ? "question" : "questions"} banked
-            {isFiltered && ` — ${total} matching filter`}
+            {t("questions.banked", {
+              count: totalUnfiltered,
+              noun: totalUnfiltered === 1 ? t("questions.question") : t("questions.questionsWord"),
+            })}
+            {isFiltered && t("questions.matchingFilter", { count: total })}
           </p>
         </div>
         <Link href="/questions/new" className={buttonVariants()}>
-          + Add question
+          {t("questions.addQuestion")}
         </Link>
       </div>
 
       <form className="flex flex-col gap-2 sm:flex-row" action="/questions">
-        <Input name="q" defaultValue={q} placeholder="Search questions or answers…" className="flex-1" />
+        <Input name="q" defaultValue={q} placeholder={t("questions.searchPlaceholder")} className="flex-1" />
         <Select name="language" defaultValue={language ?? ""} className="sm:w-40">
-          <option value="">Any language</option>
+          <option value="">{t("questions.anyLanguage")}</option>
           <option value="en">English</option>
           <option value="si">සිංහල</option>
         </Select>
         <Select name="category" defaultValue={category ?? ""} className="sm:w-56">
-          <option value="">Any category</option>
+          <option value="">{t("questions.anyCategory")}</option>
           {categories.map((c) => (
             <option key={c.category} value={c.category!}>
               {c.category}
@@ -105,11 +110,11 @@ export default async function QuestionsListPage({
           ))}
         </Select>
         <button type="submit" className={buttonVariants({ variant: "secondary" })}>
-          Filter
+          {t("common.filter")}
         </button>
         {isFiltered && (
           <Link href="/questions" className={buttonVariants({ variant: "ghost" })}>
-            Clear
+            {t("common.clear")}
           </Link>
         )}
       </form>
@@ -118,13 +123,11 @@ export default async function QuestionsListPage({
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
             {isFiltered ? (
-              <p>No questions match that search.</p>
+              <p>{t("questions.noMatch")}</p>
             ) : (
               <>
-                <p>No questions yet.</p>
-                <p className="mt-1 text-sm">
-                  Add a past exam or interview question — English or Sinhala, either works.
-                </p>
+                <p>{t("questions.empty")}</p>
+                <p className="mt-1 text-sm">{t("questions.emptyHint")}</p>
               </>
             )}
           </CardContent>
@@ -174,10 +177,10 @@ export default async function QuestionsListPage({
                   className: page <= 1 ? "pointer-events-none opacity-40" : "",
                 })}
               >
-                Previous
+                {t("common.previous")}
               </Link>
               <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
+                {t("common.pageOf", { page, total: totalPages })}
               </span>
               <Link
                 href={pageHref(page + 1)}
@@ -187,7 +190,7 @@ export default async function QuestionsListPage({
                   className: page >= totalPages ? "pointer-events-none opacity-40" : "",
                 })}
               >
-                Next
+                {t("common.next")}
               </Link>
             </div>
           )}
