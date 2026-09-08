@@ -3,9 +3,11 @@ import { db } from "@/lib/db";
 import { getEntitledBankIds } from "@/lib/authz";
 import { LogoMark } from "@/components/brand/Logo";
 import { StoreGrid, type StoreItem } from "@/components/store/StoreGrid";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function StorePage() {
   const session = await auth();
+  const t = await getT();
   const [banks, ownedBankIds] = await Promise.all([
     db.bank.findMany({
       where: { isPersonal: false, isPublished: true },
@@ -41,20 +43,17 @@ export default async function StorePage() {
         <div className="relative">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold tracking-wide text-gold backdrop-blur">
             <LogoMark className="h-3.5 w-3.5" />
-            STUDY PAL STORE
+            {t("store.badge")}
           </span>
           <h1 className="mt-4 max-w-xl text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Question &amp; vocabulary banks, ready when you are
+            {t("store.heading")}
           </h1>
-          <p className="mt-3 max-w-lg text-sm text-white/80 sm:text-base">
-            Practice sets for Grade 5 Scholarship, O/L, A/L, government exams, IQ tests, and themed
-            vocabulary — pick a bank to see what&apos;s inside.
-          </p>
+          <p className="mt-3 max-w-lg text-sm text-white/80 sm:text-base">{t("store.subheading")}</p>
         </div>
       </section>
 
       {items.length === 0 ? (
-        <p className="text-muted-foreground">Nothing published yet — check back soon.</p>
+        <p className="text-muted-foreground">{t("store.emptyPublished")}</p>
       ) : (
         <StoreGrid items={items} />
       )}

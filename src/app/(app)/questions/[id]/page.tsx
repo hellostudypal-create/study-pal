@@ -8,6 +8,7 @@ import { QuestionImages } from "@/components/questions/QuestionImages";
 import { QuestionDetail } from "@/components/questions/QuestionDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function QuestionPage({
   params,
@@ -16,6 +17,7 @@ export default async function QuestionPage({
 }) {
   const { id } = await params;
   const userId = await getCurrentUserId();
+  const t = await getT();
 
   // Check edit rights first: admins/owners/content editors can always
   // manage a bank's questions even without a personal purchase
@@ -45,9 +47,9 @@ export default async function QuestionPage({
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Question</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("questions.questionHeading")}</h1>
           <Link href="/questions" className={buttonVariants({ variant: "ghost" })}>
-            Back to question bank
+            {t("questions.backToQuestions")}
           </Link>
         </div>
         <Card>
@@ -70,10 +72,10 @@ export default async function QuestionPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Edit question</h1>
+      <h1 className="text-2xl font-bold tracking-tight">{t("questions.editQuestionTitle")}</h1>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Question bank entry</CardTitle>
+          <CardTitle className="text-base">{t("questions.entryHeading")}</CardTitle>
         </CardHeader>
         <CardContent>
           <QuestionForm
@@ -92,7 +94,7 @@ export default async function QuestionPage({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Images</CardTitle>
+          <CardTitle className="text-base">{t("questions.imagesHeading")}</CardTitle>
         </CardHeader>
         <CardContent>
           <QuestionImages questionId={question.id} initialImages={images} />

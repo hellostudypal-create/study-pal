@@ -9,6 +9,7 @@ import { Markdown } from "@/components/ui/Markdown";
 import { QuizLayout } from "@/components/quiz/QuizLayout";
 import { VideoEmbed } from "@/components/quiz/VideoEmbed";
 import type { QuizAnswerResult } from "@/components/quiz/types";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface SelfGradeItem {
   quizItemId: string;
@@ -33,6 +34,7 @@ export function SelfGradeCard({
   total: number;
   onAnswered: (result: QuizAnswerResult) => void;
 }) {
+  const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const textClass = item.language === "si" ? "font-sinhala" : "";
@@ -75,8 +77,10 @@ export function SelfGradeCard({
   const solution = revealed ? (
     <div className="space-y-3 rounded-sm bg-muted p-3.5">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold">Answer</span>
-        {item.correctOptionLabel && <Badge variant="outline">Option {item.correctOptionLabel}</Badge>}
+        <span className="text-sm font-semibold">{t("quizPlay.answer")}</span>
+        {item.correctOptionLabel && (
+          <Badge variant="outline">{t("quizPlay.optionLabel", { label: item.correctOptionLabel })}</Badge>
+        )}
       </div>
       <Markdown className={textClass}>{item.answerText}</Markdown>
       {answerImages.length > 0 && (
@@ -111,7 +115,9 @@ export function SelfGradeCard({
                   revealed && img.label === item.correctOptionLabel ? "border-success" : "border-border"
                 )}
               />
-              <p className="text-center text-xs text-muted-foreground">Option {img.label}</p>
+              <p className="text-center text-xs text-muted-foreground">
+                {t("quizPlay.optionLabel", { label: img.label ?? "" })}
+              </p>
             </div>
           ))}
         </div>
@@ -171,17 +177,17 @@ export function SelfGradeCard({
             >
               {wasCorrect ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
             </span>
-            <span className="text-sm font-semibold">{wasCorrect ? "Correct!" : "Not quite"}</span>
+            <span className="text-sm font-semibold">{wasCorrect ? t("quizPlay.correct") : t("quizPlay.notQuite")}</span>
           </div>
           <Button onClick={handleContinue} className="w-full">
-            Continue
+            {t("quizPlay.continueBtn")}
           </Button>
         </>
       )}
     </>
   ) : !revealed ? (
     <Button onClick={() => setRevealed(true)} className="w-full">
-      Show answer
+      {t("quizPlay.showAnswer")}
     </Button>
   ) : (
     <div className="flex gap-3">
@@ -190,10 +196,10 @@ export function SelfGradeCard({
         className="flex-1"
         onClick={() => onAnswered({ kind: "self_assessed", wasCorrect: false })}
       >
-        I got it wrong
+        {t("quizPlay.gotItWrong")}
       </Button>
       <Button className="flex-1" onClick={() => onAnswered({ kind: "self_assessed", wasCorrect: true })}>
-        I got it right
+        {t("quizPlay.gotItRight")}
       </Button>
     </div>
   );
@@ -205,7 +211,7 @@ export function SelfGradeCard({
       prompt={prompt}
       solution={solution}
       answerArea={answerArea}
-      answerAreaLabel={item.options ? "Choose an answer" : "Your answer"}
+      answerAreaLabel={item.options ? t("quizPlay.chooseAnswer") : t("quizPlay.yourAnswer")}
     />
   );
 }

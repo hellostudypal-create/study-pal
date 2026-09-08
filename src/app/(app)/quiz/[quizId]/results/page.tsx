@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function QuizResultsPage({
   params,
@@ -12,6 +13,7 @@ export default async function QuizResultsPage({
 }) {
   const { quizId } = await params;
   const userId = await getCurrentUserId();
+  const t = await getT();
   const quiz = userId
     ? await db.quiz.findUnique({ where: { id: quizId }, include: { items: true } })
     : null;
@@ -25,26 +27,26 @@ export default async function QuizResultsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Quiz complete</h1>
+      <h1 className="text-2xl font-bold tracking-tight">{t("quiz.quizComplete")}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Results</CardTitle>
+          <CardTitle>{t("quiz.results")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-3xl font-bold">{quiz.pointsEarned}</p>
-              <p className="text-xs text-muted-foreground">points</p>
+              <p className="text-xs text-muted-foreground">{t("quiz.pointsWord")}</p>
             </div>
             <div>
               <p className="text-3xl font-bold">
                 {correctCount}/{quiz.totalQuestions}
               </p>
-              <p className="text-xs text-muted-foreground">correct</p>
+              <p className="text-xs text-muted-foreground">{t("quiz.correctWord")}</p>
             </div>
             <div>
               <p className="text-3xl font-bold">{accuracy}%</p>
-              <p className="text-xs text-muted-foreground">accuracy</p>
+              <p className="text-xs text-muted-foreground">{t("quiz.accuracyWord")}</p>
             </div>
           </div>
           <div className="flex gap-3 pt-2">
@@ -52,10 +54,10 @@ export default async function QuizResultsPage({
               href={quiz.quizType === "vocab" ? "/quiz/vocab" : "/quiz/exam"}
               className={buttonVariants({ className: "flex-1" })}
             >
-              Quiz again
+              {t("quiz.quizAgain")}
             </Link>
             <Link href="/progress" className={buttonVariants({ variant: "outline", className: "flex-1" })}>
-              View progress
+              {t("quiz.viewProgress")}
             </Link>
           </div>
         </CardContent>

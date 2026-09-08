@@ -9,10 +9,12 @@ import { Select } from "@/components/ui/select";
 import { bankCardClassName, BankCardContent, type BankCardData } from "@/components/quiz/BankCard";
 import { SelfGradeCard, type SelfGradeItem } from "@/components/quiz/SelfGradeCard";
 import type { QuizAnswerResult } from "@/components/quiz/types";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 function ExamQuizPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"browse" | "loading" | "taking" | "error">("browse");
   const [error, setError] = useState<string | null>(null);
   const [quizId, setQuizId] = useState<string | null>(null);
@@ -50,14 +52,14 @@ function ExamQuizPageInner() {
         setBanks(
           (data.banks ?? []).map((b: BankCardData) => ({
             ...b,
-            countLabel: "questions",
+            countLabel: t("quiz.questionsCount"),
           }))
         );
         setTotalPages(data.totalPages ?? 1);
       })
       .catch(() => {})
       .finally(() => setBanksLoading(false));
-  }, [query, sort, page, phase]);
+  }, [query, sort, page, phase, t]);
 
   useEffect(() => {
     if (autoStarted.current) return;
@@ -77,7 +79,7 @@ function ExamQuizPageInner() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error ?? "Could not start quiz");
+      setError(data.error ?? t("quiz.couldNotStartQuiz"));
       setPhase("error");
       return;
     }
@@ -110,10 +112,8 @@ function ExamQuizPageInner() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Question Bank Quiz</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Pick a bank to practice — reveal the answer, then mark yourself right or wrong.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("quiz.examQuiz")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("quiz.examQuizSubtitle")}</p>
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -122,26 +122,26 @@ function ExamQuizPageInner() {
           <Input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search question banks…"
+            placeholder={t("quiz.searchQuestionBanks")}
             className="flex-1"
           />
           <Select value={sort} onChange={(e) => setSort(e.target.value)} className="sm:w-48">
-            <option value="title">Sort: Name (A–Z)</option>
-            <option value="newest">Sort: Newest</option>
-            <option value="count">Sort: Most questions</option>
+            <option value="title">{t("quiz.sortNameAZ")}</option>
+            <option value="newest">{t("quiz.sortNewest")}</option>
+            <option value="count">{t("quiz.sortMostQuestions")}</option>
           </Select>
           <Button variant="outline" onClick={() => startQuiz()}>
-            Practice all banks
+            {t("quiz.practiceAllBanks")}
           </Button>
         </div>
 
         {banksLoading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Loading…
+            {t("common.loading")}
           </div>
         ) : banks.length === 0 ? (
-          <p className="text-muted-foreground">No question banks match that search.</p>
+          <p className="text-muted-foreground">{t("quiz.noQuestionBanksMatch")}</p>
         ) : (
           <>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -165,10 +165,10 @@ function ExamQuizPageInner() {
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
                 >
-                  Previous
+                  {t("common.previous")}
                 </Button>
                 <span className="text-sm text-muted-foreground">
-                  Page {page} of {totalPages}
+                  {t("common.pageOf", { page, total: totalPages })}
                 </span>
                 <Button
                   variant="outline"
@@ -176,7 +176,7 @@ function ExamQuizPageInner() {
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Next
+                  {t("common.next")}
                 </Button>
               </div>
             )}
@@ -190,7 +190,7 @@ function ExamQuizPageInner() {
     return (
       <div className="flex items-center gap-2 text-muted-foreground">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        Loading…
+        {t("common.loading")}
       </div>
     );
   }
@@ -199,8 +199,10 @@ function ExamQuizPageInner() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Question Bank Quiz</h1>
-        <span className="rounded-full bg-gold-tint px-3 py-1 text-sm font-bold text-gold-ink">{points} pts</span>
+        <h1 className="text-2xl font-bold tracking-tight">{t("quiz.examQuiz")}</h1>
+        <span className="rounded-full bg-gold-tint px-3 py-1 text-sm font-bold text-gold-ink">
+          {points} {t("quiz.pointsSuffix")}
+        </span>
       </div>
       <SelfGradeCard
         key={item.quizItemId}

@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { getEntitledBankIds } from "@/lib/authz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getT, type TFunction } from "@/lib/i18n/translate";
 
 function computeStreak(dates: Date[]): number {
   const dayStrings = new Set(
@@ -26,6 +27,7 @@ function computeStreak(dates: Date[]): number {
 export default async function ProgressPage() {
   const userId = await getCurrentUserId();
   if (!userId) return null;
+  const t = await getT();
 
   const now = new Date();
 
@@ -70,34 +72,45 @@ export default async function ProgressPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Progress</h1>
+      <h1 className="text-2xl font-bold tracking-tight">{t("progress.title")}</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Due today" value={vocabDueCount + examDueCount} />
-        <StatCard label="Total points" value={totalPoints} />
-        <StatCard label="Day streak" value={streak} />
-        <StatCard label="Accuracy" value={accuracy !== null ? `${accuracy}%` : "—"} />
+        <StatCard label={t("progress.dueToday")} value={vocabDueCount + examDueCount} />
+        <StatCard label={t("progress.totalPoints")} value={totalPoints} />
+        <StatCard label={t("progress.dayStreak")} value={streak} />
+        <StatCard label={t("progress.accuracy")} value={accuracy !== null ? `${accuracy}%` : "—"} />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Vocabulary mastery</CardTitle>
+          <CardTitle className="text-base">{t("progress.vocabMastery")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <MasteryBars counts={vocabBoxCounts} max={maxBoxCount} />
+          <MasteryBars counts={vocabBoxCounts} max={maxBoxCount} labels={masteryLabels(t)} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Question bank mastery</CardTitle>
+          <CardTitle className="text-base">{t("progress.questionMastery")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <MasteryBars counts={examBoxCounts} max={maxBoxCount} />
+          <MasteryBars counts={examBoxCounts} max={maxBoxCount} labels={masteryLabels(t)} />
         </CardContent>
       </Card>
     </div>
   );
+}
+
+function masteryLabels(t: TFunction) {
+  return [
+    t("progress.levelNew"),
+    t("progress.level1"),
+    t("progress.level2"),
+    t("progress.level3"),
+    t("progress.level4"),
+    t("progress.mastered"),
+  ];
 }
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -109,8 +122,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-function MasteryBars({ counts, max }: { counts: number[]; max: number }) {
-  const labels = ["New", "Lvl 1", "Lvl 2", "Lvl 3", "Lvl 4", "Mastered"];
+function MasteryBars({ counts, max, labels }: { counts: number[]; max: number; labels: string[] }) {
   return (
     <div className="space-y-2.5">
       {counts.map((count, level) => (

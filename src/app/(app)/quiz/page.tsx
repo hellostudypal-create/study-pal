@@ -5,11 +5,13 @@ import { getCurrentUserId } from "@/lib/auth";
 import { getEntitledBankIds } from "@/lib/authz";
 import { buttonVariants } from "@/components/ui/button";
 import { bankCardClassName, BankCardContent } from "@/components/quiz/BankCard";
+import { getT } from "@/lib/i18n/translate";
 
 const SETS_SHOWN = 4;
 
 export default async function QuizHubPage() {
   const userId = await getCurrentUserId();
+  const t = await getT();
 
   const [vocabBanks, examBanks] = userId
     ? await Promise.all([loadBanks(userId, "vocab"), loadBanks(userId, "exam")])
@@ -17,42 +19,44 @@ export default async function QuizHubPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold tracking-tight">Quiz</h1>
+      <h1 className="text-2xl font-bold tracking-tight">{t("quiz.title")}</h1>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Link href="/quiz/vocab" className="rounded-md bg-brand p-6 text-brand-foreground transition-opacity hover:opacity-90">
           <BookOpen className="h-6 w-6 text-gold" />
-          <p className="mt-3 text-lg font-bold">Vocabulary Quiz</p>
-          <p className="mt-1 text-sm opacity-90">Words you got wrong before come back first.</p>
+          <p className="mt-3 text-lg font-bold">{t("quiz.vocabQuiz")}</p>
+          <p className="mt-1 text-sm opacity-90">{t("quiz.vocabQuizHint")}</p>
         </Link>
         <Link href="/quiz/exam" className="rounded-md bg-brand-2 p-6 text-brand-foreground transition-opacity hover:opacity-90">
           <HelpCircle className="h-6 w-6 text-gold" />
-          <p className="mt-3 text-lg font-bold">Question Bank Quiz</p>
-          <p className="mt-1 text-sm opacity-90">Reveal the answer, then mark yourself right or wrong.</p>
+          <p className="mt-3 text-lg font-bold">{t("quiz.examQuiz")}</p>
+          <p className="mt-1 text-sm opacity-90">{t("quiz.examQuizHint")}</p>
         </Link>
       </div>
 
       {vocabBanks.length > 0 && (
         <BankSection
-          title="Your vocabulary sets"
+          title={t("quiz.yourVocabSets")}
+          browseAllLabel={t("quiz.browseAll")}
           browseHref="/quiz/vocab"
           banks={vocabBanks}
           quizHref={(id) => `/quiz/vocab?bankId=${id}`}
           icon={BookOpen}
           accentClassName="bg-brand"
-          countLabel="words"
+          countLabel={t("quiz.wordsCount")}
         />
       )}
 
       {examBanks.length > 0 && (
         <BankSection
-          title="Your question banks"
+          title={t("quiz.yourQuestionBanks")}
+          browseAllLabel={t("quiz.browseAll")}
           browseHref="/quiz/exam"
           banks={examBanks}
           quizHref={(id) => `/quiz/exam?bankId=${id}`}
           icon={HelpCircle}
           accentClassName="bg-brand-2"
-          countLabel="questions"
+          countLabel={t("quiz.questionsCount")}
         />
       )}
     </div>
@@ -72,6 +76,7 @@ type BankWithCount = Awaited<ReturnType<typeof loadBanks>>[number];
 
 function BankSection({
   title,
+  browseAllLabel,
   browseHref,
   banks,
   quizHref,
@@ -80,6 +85,7 @@ function BankSection({
   countLabel,
 }: {
   title: string;
+  browseAllLabel: string;
   browseHref: string;
   banks: BankWithCount[];
   quizHref: (id: string) => string;
@@ -92,7 +98,7 @@ function BankSection({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold tracking-tight">{title}</h2>
         <Link href={browseHref} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Browse all
+          {browseAllLabel}
         </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

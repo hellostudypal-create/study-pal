@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/translate";
 
 const PAGE_SIZE = 20;
 
@@ -17,6 +18,7 @@ export default async function VocabListPage({
 }) {
   const params = await searchParams;
   const userId = await getCurrentUserId();
+  const t = await getT();
   const q = params.q?.trim() ?? "";
   const book = params.book?.trim() || undefined;
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
@@ -70,22 +72,25 @@ export default async function VocabListPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Vocabulary</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("vocab.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {totalUnfiltered} {totalUnfiltered === 1 ? "word" : "words"} banked
-            {isFiltered && ` — ${total} matching search`}
+            {t("vocab.wordsBanked", {
+              count: totalUnfiltered,
+              noun: totalUnfiltered === 1 ? t("vocab.word") : t("vocab.words"),
+            })}
+            {isFiltered && t("vocab.matchingSearch", { count: total })}
           </p>
         </div>
         <Link href="/vocab/new" className={buttonVariants()}>
-          + Add word
+          {t("vocab.addWord")}
         </Link>
       </div>
 
       <form className="flex flex-col gap-2 sm:flex-row" action="/vocab">
-        <Input name="q" defaultValue={q} placeholder="Search words or definitions…" className="flex-1" />
+        <Input name="q" defaultValue={q} placeholder={t("vocab.searchPlaceholder")} className="flex-1" />
         {books.length > 0 && (
           <Select name="book" defaultValue={book ?? ""} className="sm:w-56">
-            <option value="">Any book</option>
+            <option value="">{t("vocab.anyBook")}</option>
             {books.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.title}
@@ -94,11 +99,11 @@ export default async function VocabListPage({
           </Select>
         )}
         <button type="submit" className={buttonVariants({ variant: "secondary" })}>
-          Filter
+          {t("common.filter")}
         </button>
         {isFiltered && (
           <Link href="/vocab" className={buttonVariants({ variant: "ghost" })}>
-            Clear
+            {t("common.clear")}
           </Link>
         )}
       </form>
@@ -107,13 +112,11 @@ export default async function VocabListPage({
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
             {isFiltered ? (
-              <p>No words match that search.</p>
+              <p>{t("vocab.noMatch")}</p>
             ) : (
               <>
-                <p>No words yet.</p>
-                <p className="mt-1 text-sm">
-                  Add the next word you look up while reading — that&apos;s all it takes to start.
-                </p>
+                <p>{t("vocab.empty")}</p>
+                <p className="mt-1 text-sm">{t("vocab.emptyHint")}</p>
               </>
             )}
           </CardContent>
@@ -135,7 +138,11 @@ export default async function VocabListPage({
                           word.boxLevel === 5 && "bg-gold-tint text-gold-ink"
                         )}
                       >
-                        {word.boxLevel === 0 ? "New" : word.boxLevel === 5 ? "Mastered" : `Level ${word.boxLevel}`}
+                        {word.boxLevel === 0
+                          ? t("vocab.new")
+                          : word.boxLevel === 5
+                            ? t("vocab.mastered")
+                            : t("vocab.level", { level: word.boxLevel })}
                       </span>
                     </div>
                     {word.definition && (
@@ -145,7 +152,7 @@ export default async function VocabListPage({
                     )}
                     {word.book && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        From: {word.book.title}
+                        {t("vocab.from", { book: word.book.title })}
                       </p>
                     )}
                   </CardContent>
@@ -164,10 +171,10 @@ export default async function VocabListPage({
                   className: page <= 1 ? "pointer-events-none opacity-40" : "",
                 })}
               >
-                Previous
+                {t("common.previous")}
               </Link>
               <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
+                {t("common.pageOf", { page, total: totalPages })}
               </span>
               <Link
                 href={pageHref(page + 1)}
@@ -177,7 +184,7 @@ export default async function VocabListPage({
                   className: page >= totalPages ? "pointer-events-none opacity-40" : "",
                 })}
               >
-                Next
+                {t("common.next")}
               </Link>
             </div>
           )}

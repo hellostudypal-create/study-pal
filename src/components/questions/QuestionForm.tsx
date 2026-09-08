@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 const OPTION_LABELS = ["A", "B", "C", "D"] as const;
 type OptionLabel = (typeof OPTION_LABELS)[number];
@@ -31,6 +32,7 @@ export function QuestionForm({
   bankId?: string;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const isEdit = !!initial?.id;
 
   const [questionText, setQuestionText] = useState(initial?.questionText ?? "");
@@ -68,7 +70,7 @@ export function QuestionForm({
     setError(null);
 
     if (mcqEnabled && OPTION_LABELS.some((l) => !optionTexts[l].trim())) {
-      setError("Fill in all four options, or turn off multiple-choice.");
+      setError(t("questions.fillAllOptions"));
       return;
     }
 
@@ -107,7 +109,7 @@ export function QuestionForm({
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      setError(data.error ?? "Something went wrong");
+      setError(data.error ?? t("common.error"));
       return;
     }
 
@@ -119,14 +121,14 @@ export function QuestionForm({
 
   async function handleDelete() {
     if (!initial?.id) return;
-    if (!confirm("Delete this question? This can't be undone.")) return;
+    if (!confirm(t("questions.deleteConfirm"))) return;
 
     setDeleting(true);
     const res = await fetch(`/api/questions/${initial.id}`, { method: "DELETE" });
     setDeleting(false);
 
     if (!res.ok) {
-      setError("Failed to delete");
+      setError(t("questions.deleteFailed"));
       return;
     }
 
@@ -137,18 +139,18 @@ export function QuestionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="language">Language</Label>
+        <Label htmlFor="language">{t("questions.languageLabel")}</Label>
         <Select
           id="language"
           value={language}
           onChange={(e) => setLanguage(e.target.value as "en" | "si")}
         >
-          <option value="en">English</option>
-          <option value="si">සිංහල (Sinhala)</option>
+          <option value="en">{t("questions.englishOption")}</option>
+          <option value="si">{t("questions.sinhalaOption")}</option>
         </Select>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="questionText">Question</Label>
+        <Label htmlFor="questionText">{t("questions.questionLabel")}</Label>
         <Textarea
           id="questionText"
           required
@@ -159,7 +161,7 @@ export function QuestionForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="answerText">Answer / solution</Label>
+        <Label htmlFor="answerText">{t("questions.answerLabel")}</Label>
         <Textarea
           id="answerText"
           required
@@ -168,18 +170,11 @@ export function QuestionForm({
           value={answerText}
           onChange={(e) => setAnswerText(e.target.value)}
         />
-        <p className="text-xs text-muted-foreground">
-          Supports Markdown — **bold**, *italic*, lists, [links](https://…), and ![images](https://…). Add
-          uploaded images below, and an explanation video underneath.
-        </p>
-        {mcqEnabled && (
-          <p className="text-xs text-muted-foreground">
-            Not shown to quiz-takers while multiple-choice options are on below — kept as a fallback summary.
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground">{t("questions.markdownHint")}</p>
+        {mcqEnabled && <p className="text-xs text-muted-foreground">{t("questions.mcqHiddenHint")}</p>}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="explanationVideoUrl">Explanation video (optional)</Label>
+        <Label htmlFor="explanationVideoUrl">{t("questions.explanationVideoLabel")}</Label>
         <Input
           id="explanationVideoUrl"
           type="url"
@@ -187,17 +182,15 @@ export function QuestionForm({
           onChange={(e) => setExplanationVideoUrl(e.target.value)}
           placeholder="https://www.youtube.com/watch?v=…"
         />
-        <p className="text-xs text-muted-foreground">
-          A YouTube link embeds a player in the solution; any other link shows a direct video or a "Watch" button.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("questions.videoHint")}</p>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="category">{t("questions.categoryLabel")}</Label>
         <Input
           id="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          placeholder="e.g. Bank Interview 2026, Physics Grade 10"
+          placeholder={t("questions.categoryPlaceholder")}
         />
       </div>
 
@@ -210,7 +203,7 @@ export function QuestionForm({
             onChange={(e) => setMcqEnabled(e.target.checked)}
             className="h-4 w-4 rounded border-input"
           />
-          <Label htmlFor="mcqEnabled">Multiple-choice (4 text options)</Label>
+          <Label htmlFor="mcqEnabled">{t("questions.mcqToggleLabel")}</Label>
         </div>
         {mcqEnabled && (
           <div className="space-y-2.5">
@@ -221,40 +214,38 @@ export function QuestionForm({
                   name="correctLabel"
                   checked={correctLabel === label}
                   onChange={() => setCorrectLabel(label)}
-                  aria-label={`Option ${label} is correct`}
+                  aria-label={t("questions.optionIsCorrectAria", { label })}
                   className="h-4 w-4 shrink-0"
                 />
                 <span className="w-5 shrink-0 text-sm font-bold">{label}</span>
                 <Input
                   value={optionTexts[label]}
                   onChange={(e) => setOptionTexts((prev) => ({ ...prev, [label]: e.target.value }))}
-                  placeholder={`Option ${label} text`}
+                  placeholder={t("questions.optionPlaceholder", { label })}
                   className={textClass}
                 />
               </div>
             ))}
-            <p className="text-xs text-muted-foreground">Select the radio button next to the correct option.</p>
+            <p className="text-xs text-muted-foreground">{t("questions.mcqHint")}</p>
           </div>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="correctOptionLabel">Correct option (if this uses image answer options)</Label>
+        <Label htmlFor="correctOptionLabel">{t("questions.correctOptionLabel")}</Label>
         <Input
           id="correctOptionLabel"
           value={correctOptionLabel}
           onChange={(e) => setCorrectOptionLabel(e.target.value)}
-          placeholder="e.g. A, B, C"
+          placeholder={t("questions.correctOptionPlaceholder")}
           maxLength={5}
         />
-        <p className="text-xs text-muted-foreground">
-          For the separate image-based answer options below (not the text options above) — leave blank otherwise.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("questions.correctOptionHint")}</p>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving…" : isEdit ? "Save changes" : "Add question"}
+          {loading ? t("common.saving") : isEdit ? t("questions.saveChanges") : t("questions.addQuestionBtn")}
         </Button>
         {isEdit && (
           <Button
@@ -263,7 +254,7 @@ export function QuestionForm({
             onClick={handleDelete}
             disabled={deleting}
           >
-            {deleting ? "Deleting…" : "Delete"}
+            {deleting ? t("questions.deleting") : t("common.delete")}
           </Button>
         )}
       </div>
