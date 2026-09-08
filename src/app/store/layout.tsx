@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { Logo } from "@/components/brand/Logo";
+import { getT } from "@/lib/i18n/translate";
 
 export default async function StoreLayout({
   children,
@@ -8,6 +9,7 @@ export default async function StoreLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const t = await getT();
 
   return (
     <div className="min-h-screen bg-brand-light-tint">
@@ -24,7 +26,7 @@ export default async function StoreLayout({
                   href="/dashboard"
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 >
-                  Dashboard
+                  {t("store.dashboard")}
                 </Link>
               </>
             ) : (
@@ -33,13 +35,13 @@ export default async function StoreLayout({
                   href="/login"
                   className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                 >
-                  Log in
+                  {t("store.logIn")}
                 </Link>
                 <Link
                   href="/signup"
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 >
-                  Sign up
+                  {t("store.signUp")}
                 </Link>
               </>
             )}

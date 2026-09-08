@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Poppins, Noto_Sans_Sinhala } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { getLocale } from "@/lib/i18n/translate";
+import { cn } from "@/lib/utils";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -26,17 +28,24 @@ export const viewport: Viewport = {
   themeColor: "#591F82",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${notoSinhala.variable} font-sans antialiased`}
+        className={cn(
+          poppins.variable,
+          notoSinhala.variable,
+          locale === "si" ? "font-sinhala" : "font-sans",
+          "antialiased"
+        )}
       >
-        <Providers>{children}</Providers>
+        <Providers initialLocale={locale}>{children}</Providers>
       </body>
     </html>
   );

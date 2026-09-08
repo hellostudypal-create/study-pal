@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export type StoreItem = {
   id: string;
@@ -17,12 +18,13 @@ export type StoreItem = {
 };
 
 const FILTERS = [
-  { key: "all", label: "All" },
-  { key: "exam", label: "Exam" },
-  { key: "vocab", label: "Vocabulary" },
+  { key: "all", dictKey: "store.all" },
+  { key: "exam", dictKey: "store.exam" },
+  { key: "vocab", dictKey: "store.vocabulary" },
 ] as const;
 
 export function StoreGrid({ items }: { items: StoreItem[] }) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
 
   const counts = useMemo(
@@ -51,7 +53,7 @@ export function StoreGrid({ items }: { items: StoreItem[] }) {
                 : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
             )}
           >
-            {f.label}
+            {t(f.dictKey)}
             <span
               className={cn(
                 "ml-1.5 text-xs font-normal",
@@ -65,7 +67,7 @@ export function StoreGrid({ items }: { items: StoreItem[] }) {
       </div>
 
       {visible.length === 0 ? (
-        <p className="text-muted-foreground">Nothing here yet — check back soon.</p>
+        <p className="text-muted-foreground">{t("store.empty")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visible.map((item) => (
@@ -78,6 +80,7 @@ export function StoreGrid({ items }: { items: StoreItem[] }) {
 }
 
 function StoreCard({ item }: { item: StoreItem }) {
+  const { t } = useTranslation();
   return (
     <Link
       href={`/store/${item.id}`}
@@ -97,11 +100,11 @@ function StoreCard({ item }: { item: StoreItem }) {
             item.kind === "exam" ? "bg-brand/85 text-white" : "bg-gold text-brand"
           )}
         >
-          {item.kind === "exam" ? "Exam" : "Vocabulary"}
+          {item.kind === "exam" ? t("store.exam") : t("store.vocabulary")}
         </span>
         {item.owned && (
           <span className="absolute right-2.5 top-2.5 rounded-full bg-success px-2.5 py-1 text-[11px] font-bold text-white">
-            Owned
+            {t("store.owned")}
           </span>
         )}
       </div>
@@ -124,10 +127,10 @@ function StoreCard({ item }: { item: StoreItem }) {
         )}
         <div className="mt-auto flex items-center justify-between pt-3">
           <span className="text-xs text-muted-foreground">
-            {item.itemCount} {item.kind === "exam" ? "questions" : "words"}
+            {item.itemCount} {item.kind === "exam" ? t("store.questionsCount") : t("store.wordsCount")}
           </span>
           <span className="text-xs font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
-            View &rarr;
+            {t("store.view")}
           </span>
         </div>
       </div>

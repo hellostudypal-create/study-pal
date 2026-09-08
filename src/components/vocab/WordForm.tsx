@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface WordFormValues {
   id?: string;
@@ -31,6 +32,7 @@ export function WordForm({
   bankId?: string;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const isEdit = !!initial?.id;
 
   const [term, setTerm] = useState(initial?.term ?? "");
@@ -65,7 +67,7 @@ export function WordForm({
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Something went wrong");
+      setError(data.error ?? t("common.error"));
       return;
     }
 
@@ -75,14 +77,14 @@ export function WordForm({
 
   async function handleDelete() {
     if (!initial?.id) return;
-    if (!confirm(`Delete "${initial.term}"? This can't be undone.`)) return;
+    if (!confirm(t("vocab.deleteConfirm", { term: initial.term }))) return;
 
     setDeleting(true);
     const res = await fetch(`/api/vocab/${initial.id}`, { method: "DELETE" });
     setDeleting(false);
 
     if (!res.ok) {
-      setError("Failed to delete");
+      setError(t("vocab.deleteFailed"));
       return;
     }
 
@@ -93,38 +95,38 @@ export function WordForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="term">Word or phrase</Label>
+        <Label htmlFor="term">{t("vocab.wordLabel")}</Label>
         <Input
           id="term"
           required
           autoFocus
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          placeholder="e.g. ephemeral"
+          placeholder={t("vocab.wordPlaceholder")}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="definition">Definition</Label>
+        <Label htmlFor="definition">{t("vocab.definitionLabel")}</Label>
         <Textarea
           id="definition"
           value={definition}
           onChange={(e) => setDefinition(e.target.value)}
-          placeholder="What does it mean?"
+          placeholder={t("vocab.definitionPlaceholder")}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="exampleSentence">Example sentence</Label>
+        <Label htmlFor="exampleSentence">{t("vocab.exampleLabel")}</Label>
         <Textarea
           id="exampleSentence"
           value={exampleSentence}
           onChange={(e) => setExampleSentence(e.target.value)}
-          placeholder="The sentence you found it in"
+          placeholder={t("vocab.examplePlaceholder")}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="bookId">Book</Label>
+        <Label htmlFor="bookId">{t("vocab.bookLabel")}</Label>
         <Select id="bookId" value={bookId} onChange={(e) => setBookId(e.target.value)}>
-          <option value="">No book</option>
+          <option value="">{t("vocab.noBook")}</option>
           {books.map((b) => (
             <option key={b.id} value={b.id}>
               {b.title}
@@ -135,7 +137,7 @@ export function WordForm({
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving…" : isEdit ? "Save changes" : "Add word"}
+          {loading ? t("common.saving") : isEdit ? t("vocab.saveChanges") : t("vocab.addWordBtn")}
         </Button>
         {isEdit && (
           <Button
@@ -144,7 +146,7 @@ export function WordForm({
             onClick={handleDelete}
             disabled={deleting}
           >
-            {deleting ? "Deleting…" : "Delete"}
+            {deleting ? t("vocab.deleting") : t("common.delete")}
           </Button>
         )}
       </div>
