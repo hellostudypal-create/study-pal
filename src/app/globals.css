@@ -43,6 +43,13 @@
     --brand: 271 60% 34%;
     --brand-2: 288 55% 46%;
     --brand-foreground: 0 0% 98%;
+
+    /* The soft lilac from the brand mockups' backdrop (~#cfbcda). Used at
+       full strength (--brand-light) for decorative fills like hero glow
+       blobs; --brand-light-tint is a lighter wash of the same hue, for
+       page/section backgrounds — visible, but not a solid color block. */
+    --brand-light: 278 32% 74%;
+    --brand-light-tint: 278 32% 95%;
   }
 
   .dark {
@@ -76,6 +83,9 @@
 
     --success: 152 50% 55%;
     --success-tint: 152 35% 16%;
+
+    --brand-light: 264 28% 30%;
+    --brand-light-tint: 264 25% 13%;
   }
 
   * {

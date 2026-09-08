@@ -17,7 +17,10 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
+        background: {
+          DEFAULT: "hsl(var(--background))",
+          2: "hsl(var(--background-2))",
+        },
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -29,6 +32,8 @@ const config: Config = {
           DEFAULT: "hsl(var(--brand))",
           2: "hsl(var(--brand-2))",
           foreground: "hsl(var(--brand-foreground))",
+          light: "hsl(var(--brand-light))",
+          "light-tint": "hsl(var(--brand-light-tint))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

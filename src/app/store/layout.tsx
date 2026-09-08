@@ -10,9 +10,9 @@ export default async function StoreLayout({
   const session = await auth();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-light-tint">
       <header className="border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
           <Link href="/store">
             <Logo />
           </Link>
@@ -46,7 +46,7 @@ export default async function StoreLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8">{children}</main>
     </div>
   );
 }

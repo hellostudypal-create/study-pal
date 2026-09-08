@@ -18,7 +18,7 @@ export default async function AppLayout({
   const isAdmin = session?.user?.role === "admin";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-light-tint">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <span className="text-lg font-extrabold tracking-tight">Study Pal</span>

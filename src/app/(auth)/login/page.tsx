@@ -48,7 +48,7 @@ export default function LoginPage() {
     <Card>
       <CardHeader>
         <CardTitle>Log in</CardTitle>
-        <CardDescription>Welcome back — pick up where you left off.</CardDescription>
+        <CardDescription>Welcome back..! pick up where you left off.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
