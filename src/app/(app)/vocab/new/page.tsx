@@ -9,7 +9,7 @@ export default async function NewWordPage({
   searchParams: Promise<{ bankId?: string }>;
 }) {
   const { bankId } = await searchParams;
-  const books = await db.book.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } });
+  const books = await db.sourceBook.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } });
   const t = await getT();
 
   return (

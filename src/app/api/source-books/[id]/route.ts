@@ -27,10 +27,10 @@ export async function PATCH(
     );
   }
 
-  const existing = await db.book.findUnique({ where: { id } });
+  const existing = await db.sourceBook.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const book = await db.book.update({ where: { id }, data: parsed.data });
+  const book = await db.sourceBook.update({ where: { id }, data: parsed.data });
 
   return NextResponse.json({ book });
 }
@@ -44,7 +44,7 @@ export async function DELETE(
   if (session.user.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
-  const existing = await db.book.findUnique({
+  const existing = await db.sourceBook.findUnique({
     where: { id },
     include: { _count: { select: { words: true } } },
   });
@@ -56,7 +56,7 @@ export async function DELETE(
     );
   }
 
-  await db.book.delete({ where: { id } });
+  await db.sourceBook.delete({ where: { id } });
 
   return NextResponse.json({ ok: true });
 }

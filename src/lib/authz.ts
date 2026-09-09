@@ -1,4 +1,4 @@
-import { Bank, BankKind, ExamQuestion, VocabWord } from "@prisma/client";
+import { Bank, BankKind, Book, ExamQuestion, VocabWord } from "@prisma/client";
 import { db } from "@/lib/db";
 
 export async function getEntitledBankIds(userId: string, kind?: BankKind): Promise<string[]> {
@@ -65,6 +65,22 @@ export async function loadVocabWordForEdit(userId: string, wordId: string): Prom
   if (!word) return null;
   const allowed = await canEditBank(userId, word.bankId);
   return allowed ? word : null;
+}
+
+export async function getEntitledBookIds(userId: string): Promise<string[]> {
+  const entitlements = await db.bookEntitlement.findMany({
+    where: { userId },
+    select: { bookId: true },
+  });
+  return entitlements.map((e) => e.bookId);
+}
+
+export async function assertBookEntitled(userId: string, bookId: string): Promise<Book | null> {
+  const entitlement = await db.bookEntitlement.findUnique({
+    where: { userId_bookId: { userId, bookId } },
+    include: { book: true },
+  });
+  return entitlement?.book ?? null;
 }
 
 export async function getOrCreatePersonalBank(userId: string, kind: BankKind): Promise<Bank> {

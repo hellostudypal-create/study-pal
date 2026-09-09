@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getEntitledBankIds } from "@/lib/authz";
+import { getEntitledBankIds, getEntitledBookIds } from "@/lib/authz";
 import { LogoMark } from "@/components/brand/Logo";
 import { StoreGrid, type StoreItem } from "@/components/store/StoreGrid";
 import { getT } from "@/lib/i18n/translate";
@@ -8,16 +8,22 @@ import { getT } from "@/lib/i18n/translate";
 export default async function StorePage() {
   const session = await auth();
   const t = await getT();
-  const [banks, ownedBankIds] = await Promise.all([
+  const [banks, books, ownedBankIds, ownedBookIds] = await Promise.all([
     db.bank.findMany({
       where: { isPersonal: false, isPublished: true },
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { examQuestions: true, vocabWords: true } } },
     }),
+    db.book.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { chapters: true } } },
+    }),
     session?.user ? getEntitledBankIds(session.user.id) : Promise.resolve([]),
+    session?.user ? getEntitledBookIds(session.user.id) : Promise.resolve([]),
   ]);
 
-  const items: StoreItem[] = banks.map((bank) => ({
+  const bankItems: StoreItem[] = banks.map((bank) => ({
     id: bank.id,
     title: bank.title,
     description: bank.description,
@@ -28,6 +34,20 @@ export default async function StorePage() {
     owned: ownedBankIds.includes(bank.id),
     imageUrl: bank.coverImageUrl ?? `https://picsum.photos/seed/studypal-${bank.id}/480/360`,
   }));
+
+  const bookItems: StoreItem[] = books.map((book) => ({
+    id: book.id,
+    title: book.title,
+    description: book.description,
+    kind: "book",
+    subtitle: book.author,
+    itemCount: book._count.chapters,
+    priceLabel: book.price != null ? `Rs. ${Number(book.price).toLocaleString()}` : null,
+    owned: ownedBookIds.includes(book.id),
+    imageUrl: book.coverImageUrl ?? `https://picsum.photos/seed/studypal-book-${book.id}/480/360`,
+  }));
+
+  const items: StoreItem[] = [...bankItems, ...bookItems];
 
   return (
     <div className="space-y-8">

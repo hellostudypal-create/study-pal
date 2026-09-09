@@ -24,15 +24,17 @@ model User {
   mustChangePassword Boolean  @default(false) @map("must_change_password")
   createdAt          DateTime @default(now()) @map("created_at")
 
-  vocabWords          VocabWord[]
-  examQuestions       ExamQuestion[]
-  quizzes             Quiz[]
-  ownedBanks          Bank[]             @relation("BankOwner")
-  entitlements        Entitlement[]
-  editableBanks       BankEditor[]
-  grantedEntitlements Entitlement[]      @relation("GrantedBy")
-  invitationTokens    InvitationToken[]
-  passwordResetTokens PasswordResetToken[]
+  vocabWords              VocabWord[]
+  examQuestions           ExamQuestion[]
+  quizzes                 Quiz[]
+  ownedBanks              Bank[]               @relation("BankOwner")
+  entitlements            Entitlement[]
+  editableBanks           BankEditor[]
+  grantedEntitlements     Entitlement[]        @relation("GrantedBy")
+  bookEntitlements        BookEntitlement[]
+  grantedBookEntitlements BookEntitlement[]    @relation("BookGrantedBy")
+  invitationTokens        InvitationToken[]
+  passwordResetTokens     PasswordResetToken[]
 
   @@map("users")
 }
@@ -82,28 +84,29 @@ enum ExamCategory {
 }
 
 model Bank {
-  id                         String        @id @default(uuid())
-  kind                       BankKind
-  title                      String
-  description                String?
-  coverImageUrl              String?       @map("cover_image_url")
-  examCategory               ExamCategory? @map("exam_category")
-  standardExamQuestionCount  Int?          @map("standard_exam_question_count")
-  examTimeLimitMinutes       Int?          @map("exam_time_limit_minutes")
-  theme                      String?
-  price                      Decimal?      @db.Decimal(10, 2)
-  isPublished                Boolean       @default(false) @map("is_published")
-  isPersonal                 Boolean       @default(false) @map("is_personal")
-  ownerUserId                String?       @map("owner_user_id")
-  owner                      User?         @relation("BankOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
-  createdAt                  DateTime      @default(now()) @map("created_at")
-  updatedAt                  DateTime      @updatedAt @map("updated_at")
+  id                        String        @id @default(uuid())
+  kind                      BankKind
+  title                     String
+  description               String?
+  coverImageUrl             String?       @map("cover_image_url")
+  examCategory              ExamCategory? @map("exam_category")
+  standardExamQuestionCount Int?          @map("standard_exam_question_count")
+  examTimeLimitMinutes      Int?          @map("exam_time_limit_minutes")
+  theme                     String?
+  price                     Decimal?      @db.Decimal(10, 2)
+  isPublished               Boolean       @default(false) @map("is_published")
+  isPersonal                Boolean       @default(false) @map("is_personal")
+  ownerUserId               String?       @map("owner_user_id")
+  owner                     User?         @relation("BankOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  createdAt                 DateTime      @default(now()) @map("created_at")
+  updatedAt                 DateTime      @updatedAt @map("updated_at")
 
   examQuestions ExamQuestion[]
   vocabWords    VocabWord[]
   entitlements  Entitlement[]
   editors       BankEditor[]
   quizzes       Quiz[]
+  quizForBooks  Book[]
 
   @@index([kind, isPublished, isPersonal])
   @@map("banks")
@@ -145,6 +148,82 @@ model Entitlement {
 }
 
 model Book {
+  id                 String   @id @default(uuid())
+  title              String
+  author             String?
+  description        String?
+  coverImageUrl      String?  @map("cover_image_url")
+  price              Decimal? @db.Decimal(10, 2)
+  isPublished        Boolean  @default(false) @map("is_published")
+  previewPhraseLimit Int      @default(5) @map("preview_phrase_limit")
+  quizBankId         String?  @map("quiz_bank_id")
+  quizBank           Bank?    @relation(fields: [quizBankId], references: [id], onDelete: SetNull)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  chapters     BookChapter[]
+  entitlements BookEntitlement[]
+
+  @@map("books")
+}
+
+model BookChapter {
+  id            String   @id @default(uuid())
+  bookId        String   @map("book_id")
+  book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  title         String
+  subtitle      String?
+  coverImageUrl String?  @map("cover_image_url")
+  order         Int      @default(0)
+  isFreePreview Boolean  @default(false) @map("is_free_preview")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  phrases BookPhrase[]
+
+  @@index([bookId, order])
+  @@map("book_chapters")
+}
+
+model BookPhrase {
+  id              String      @id @default(uuid())
+  chapterId       String      @map("chapter_id")
+  chapter         BookChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  phrase          String
+  translationSi   String?     @map("translation_si")
+  pronunciationSi String?     @map("pronunciation_si")
+  explanation     String
+  explanationSi   String?     @map("explanation_si")
+  order           Int         @default(0)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  @@index([chapterId, order])
+  @@map("book_phrases")
+}
+
+model BookEntitlement {
+  id              String            @id @default(uuid())
+  userId          String            @map("user_id")
+  bookId          String            @map("book_id")
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book            Book              @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  source          EntitlementSource @default(manual_grant)
+  grantedByUserId String?           @map("granted_by_user_id")
+  grantedBy       User?             @relation("BookGrantedBy", fields: [grantedByUserId], references: [id], onDelete: SetNull)
+  grantedAt       DateTime          @default(now()) @map("granted_at")
+  expiresAt       DateTime?         @map("expires_at")
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@map("book_entitlements")
+}
+
+// Lightweight citation tag for a vocab word's source ("From: Alice in
+// Wonderland") - unrelated to the sellable Book/BookChapter/BookPhrase
+// product below, which owns the "Book" name since that's the more
+// important, user-facing meaning going forward.
+model SourceBook {
   id          String   @id @default(uuid())
   title       String
   author      String?
@@ -154,28 +233,28 @@ model Book {
 
   words VocabWord[]
 
-  @@map("books")
+  @@map("source_books")
 }
 
 model VocabWord {
-  id              String   @id @default(uuid())
-  bankId          String   @map("bank_id")
-  bank            Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
-  userId          String?  @map("user_id")
-  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  bookId          String?  @map("book_id")
-  book            Book?    @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  id              String      @id @default(uuid())
+  bankId          String      @map("bank_id")
+  bank            Bank        @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  userId          String?     @map("user_id")
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  bookId          String?     @map("book_id")
+  book            SourceBook? @relation(fields: [bookId], references: [id], onDelete: SetNull)
   chapter         String?
   term            String
   definition      String?
-  definitionSi    String?  @map("definition_si")
-  exampleSentence String?  @map("example_sentence")
-  boxLevel        Int      @default(0) @map("box_level")
-  nextReviewAt    DateTime @default(now()) @map("next_review_at")
-  timesSeen       Int      @default(0) @map("times_seen")
-  timesCorrect    Int      @default(0) @map("times_correct")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  definitionSi    String?     @map("definition_si")
+  exampleSentence String?     @map("example_sentence")
+  boxLevel        Int         @default(0) @map("box_level")
+  nextReviewAt    DateTime    @default(now()) @map("next_review_at")
+  timesSeen       Int         @default(0) @map("times_seen")
+  timesCorrect    Int         @default(0) @map("times_correct")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
 
   @@index([bankId, nextReviewAt])
   @@index([bookId])

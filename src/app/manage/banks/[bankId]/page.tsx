@@ -86,7 +86,7 @@ export default async function BankDetailPage({
         take: PAGE_SIZE,
         include: { book: { select: { title: true } } },
       }),
-      db.book.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+      db.sourceBook.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     ]);
     books = allBooks;
     vocabAccordionItems = words.map((w) => ({

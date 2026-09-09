@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   const mode = items.some((i) => i.options !== null) ? "multiple_choice" : "self_graded";
 
   const bookIds = [...new Set(items.map((i) => i.word.bookId).filter((id): id is string => id !== null))];
-  const books = bookIds.length > 0 ? await db.book.findMany({ where: { id: { in: bookIds } } }) : [];
+  const books = bookIds.length > 0 ? await db.sourceBook.findMany({ where: { id: { in: bookIds } } }) : [];
   const bookTitleById = new Map(books.map((b) => [b.id, b.title]));
 
   const quiz = await db.quiz.create({

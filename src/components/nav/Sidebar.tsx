@@ -63,7 +63,7 @@ export function Sidebar({
 
       <nav className="flex flex-1 flex-col gap-1">
         {navItems.map(({ href, key, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+          const active = pathname === href || pathname?.startsWith(href + "/");
           return (
             <Link
               key={href}
@@ -89,7 +89,7 @@ export function Sidebar({
             className={cn(
               "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-semibold transition-colors",
               collapsed && "justify-center px-0",
-              pathname.startsWith("/manage")
+              pathname?.startsWith("/manage")
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-secondary"
             )}

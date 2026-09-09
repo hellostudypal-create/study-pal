@@ -2,11 +2,12 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default async function ManageBooksPage() {
   const books = await db.book.findMany({
-    orderBy: { title: "asc" },
-    include: { _count: { select: { words: true } } },
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { chapters: true, entitlements: true } } },
   });
 
   return (
@@ -21,27 +22,48 @@ export default async function ManageBooksPage() {
       {books.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
-            No books yet — add one to start organizing vocabulary by source.
+            No books yet — create one to start selling.
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3">
-          {books.map((book) => (
-            <Link key={book.id} href={`/manage/books/${book.id}`}>
-              <Card className="transition-colors hover:border-primary/50">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div>
-                    <h3 className="font-semibold">{book.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {book.author ? `${book.author} · ` : ""}
-                      {book._count.words} {book._count.words === 1 ? "word" : "words"}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-3">Title</th>
+                  <th className="px-4 py-3">Author</th>
+                  <th className="px-4 py-3">Price</th>
+                  <th className="px-4 py-3">Chapters</th>
+                  <th className="px-4 py-3">Access</th>
+                  <th className="px-4 py-3">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {books.map((book) => (
+                  <tr key={book.id} className="hover:bg-muted/40">
+                    <td className="px-4 py-3 font-medium">
+                      <Link href={`/manage/books/${book.id}`} className="hover:underline">
+                        {book.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{book.author ?? "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {book.price != null ? `Rs. ${Number(book.price).toLocaleString()}` : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{book._count.chapters}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{book._count.entitlements}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={book.isPublished ? "default" : "outline"}>
+                        {book.isPublished ? "Published" : "Draft"}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );
