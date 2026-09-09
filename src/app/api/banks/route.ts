@@ -7,6 +7,7 @@ const createSchema = z.object({
   kind: z.enum(["exam", "vocab"]),
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
+  coverImageUrl: z.string().trim().url().max(1000).nullable().optional(),
   examCategory: z.enum(["IQ", "Grade5Scholarship", "OL", "AL", "GovAdmin", "Other"]).optional(),
   standardExamQuestionCount: z.number().int().min(1).max(500).nullable().optional(),
   examTimeLimitMinutes: z.number().int().min(1).max(600).nullable().optional(),

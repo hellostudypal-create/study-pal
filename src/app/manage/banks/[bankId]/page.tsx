@@ -124,6 +124,7 @@ export default async function BankDetailPage({
               kind: bank.kind,
               title: bank.title,
               description: bank.description ?? "",
+              coverImageUrl: bank.coverImageUrl ?? "",
               examCategory: bank.examCategory ?? "IQ",
               standardExamQuestionCount: bank.standardExamQuestionCount?.toString() ?? "",
               examTimeLimitMinutes: bank.examTimeLimitMinutes?.toString() ?? "",

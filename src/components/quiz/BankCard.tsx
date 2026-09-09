@@ -8,6 +8,7 @@ export interface BankCardData {
   count: number;
   countLabel: string;
   standardExamQuestionCount?: number | null;
+  coverImageUrl?: string | null;
 }
 
 export const bankCardClassName =
@@ -24,9 +25,14 @@ export function BankCardContent({
 }) {
   return (
     <>
-      <div className={cn("flex h-20 items-center justify-center", accentClassName)}>
-        <Icon className="h-7 w-7 text-gold" />
-      </div>
+      {bank.coverImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={bank.coverImageUrl} alt="" className="h-20 w-full object-cover" />
+      ) : (
+        <div className={cn("flex h-20 items-center justify-center", accentClassName)}>
+          <Icon className="h-7 w-7 text-gold" />
+        </div>
+      )}
       <div className="flex flex-1 flex-col p-3">
         <h3 className="line-clamp-1 text-sm font-bold">{bank.title}</h3>
         {bank.subtitle && <p className="line-clamp-1 text-xs text-muted-foreground">{bank.subtitle}</p>}
