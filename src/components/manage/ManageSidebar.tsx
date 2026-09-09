@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Library, Users, BookOpen, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Library, Users, BookOpen, Bookmark, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
 import { LogoBadge } from "@/components/brand/Logo";
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/manage", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/manage/banks", label: "Banks", icon: Library, exact: false },
   { href: "/manage/books", label: "Books", icon: BookOpen, exact: false },
+  { href: "/manage/source-books", label: "Source Books", icon: Bookmark, exact: false },
   { href: "/manage/users", label: "Users", icon: Users, exact: false },
 ];
 
@@ -30,7 +31,7 @@ export function ManageSidebar() {
 
         <nav className="flex flex-1 flex-col gap-1">
           {navItems.map(({ href, label, icon: Icon, exact }) => {
-            const active = exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+            const active = exact ? pathname === href : pathname === href || pathname?.startsWith(href + "/");
             return (
               <Link
                 key={href}
@@ -72,7 +73,7 @@ export function ManageSidebar() {
         </div>
         <nav className="flex items-stretch justify-around border-t border-border">
           {navItems.map(({ href, label, exact }) => {
-            const active = exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+            const active = exact ? pathname === href : pathname === href || pathname?.startsWith(href + "/");
             return (
               <Link
                 key={href}

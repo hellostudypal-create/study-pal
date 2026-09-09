@@ -67,9 +67,9 @@ function VocabQuizPageInner() {
   useEffect(() => {
     if (autoStarted.current) return;
     autoStarted.current = true;
-    const urlBankId = searchParams.get("bankId");
+    const urlBankId = searchParams?.get("bankId");
     if (!urlBankId) return;
-    const urlCount = Number(searchParams.get("count"));
+    const urlCount = Number(searchParams?.get("count"));
     if (urlCount > 0) setPracticeCount(urlCount);
     startQuiz(urlBankId, urlCount > 0 ? urlCount : undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps

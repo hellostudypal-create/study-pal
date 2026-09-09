@@ -6,24 +6,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 
 export interface BookFormValues {
   id?: string;
   title: string;
   author: string;
   description: string;
+  coverImageUrl: string;
+  price: string;
+  isPublished: boolean;
+  quizBankId: string;
+  previewPhraseLimit: string;
 }
 
-export function BookForm({ initial }: { initial?: BookFormValues }) {
+export interface QuizBankOption {
+  id: string;
+  title: string;
+}
+
+export function BookForm({
+  initial,
+  quizBanks = [],
+}: {
+  initial?: BookFormValues;
+  quizBanks?: QuizBankOption[];
+}) {
   const router = useRouter();
   const isEdit = !!initial?.id;
 
   const [title, setTitle] = useState(initial?.title ?? "");
   const [author, setAuthor] = useState(initial?.author ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [coverImageUrl, setCoverImageUrl] = useState(initial?.coverImageUrl ?? "");
+  const [price, setPrice] = useState(initial?.price ?? "");
+  const [isPublished, setIsPublished] = useState(initial?.isPublished ?? false);
+  const [quizBankId, setQuizBankId] = useState(initial?.quizBankId ?? "");
+  const [previewPhraseLimit, setPreviewPhraseLimit] = useState(initial?.previewPhraseLimit ?? "5");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +61,11 @@ export function BookForm({ initial }: { initial?: BookFormValues }) {
         title,
         author: author || undefined,
         description: description || undefined,
+        coverImageUrl: coverImageUrl.trim() || null,
+        price: price ? Number(price) : undefined,
+        isPublished,
+        quizBankId: quizBankId || null,
+        previewPhraseLimit: previewPhraseLimit ? Number(previewPhraseLimit) : 5,
       }),
     });
 
@@ -51,25 +77,9 @@ export function BookForm({ initial }: { initial?: BookFormValues }) {
       return;
     }
 
-    router.push("/manage/books");
-    router.refresh();
-  }
-
-  async function handleDelete() {
-    if (!initial?.id) return;
-    if (!confirm(`Delete "${initial.title}"? This can't be undone.`)) return;
-
-    setDeleting(true);
-    const res = await fetch(`/api/books/${initial.id}`, { method: "DELETE" });
-    setDeleting(false);
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Failed to delete");
-      return;
-    }
-
-    router.push("/manage/books");
+    const data = await res.json();
+    const bookId = isEdit ? initial!.id : data.book.id;
+    router.push(`/manage/books/${bookId}`);
     router.refresh();
   }
 
@@ -83,17 +93,12 @@ export function BookForm({ initial }: { initial?: BookFormValues }) {
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Alice in Wonderland"
+          placeholder="e.g. Say This, Not That: The Workplace Edition"
         />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="author">Author</Label>
-        <Input
-          id="author"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          placeholder="e.g. Lewis Carroll"
-        />
+        <Input id="author" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Optional" />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="description">Description</Label>
@@ -101,19 +106,88 @@ export function BookForm({ initial }: { initial?: BookFormValues }) {
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional notes about this book"
+          placeholder="What's in this book, shown to buyers"
         />
+        <p className="text-xs text-muted-foreground">Supports Markdown.</p>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="coverImageUrl">Cover image URL</Label>
+        <div className="flex items-start gap-3">
+          <Input
+            id="coverImageUrl"
+            type="url"
+            value={coverImageUrl}
+            onChange={(e) => setCoverImageUrl(e.target.value)}
+            placeholder="https://i.ibb.co/…"
+            className="flex-1"
+          />
+          {coverImageUrl.trim() && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverImageUrl.trim()}
+              alt=""
+              className="h-14 w-20 shrink-0 rounded-md border border-border object-cover"
+              onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+            />
+          )}
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="price">Price (LKR)</Label>
+        <Input
+          id="price"
+          type="number"
+          min="0"
+          step="1"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="e.g. 1500"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="previewPhraseLimit">Free preview phrase limit</Label>
+        <Input
+          id="previewPhraseLimit"
+          type="number"
+          min="0"
+          step="1"
+          value={previewPhraseLimit}
+          onChange={(e) => setPreviewPhraseLimit(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">
+          How many phrases to show per free-preview chapter on the public store page before requiring purchase.
+        </p>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="quizBankId">Quiz bank (optional)</Label>
+        <Select id="quizBankId" value={quizBankId} onChange={(e) => setQuizBankId(e.target.value)}>
+          <option value="">No quiz</option>
+          {quizBanks.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.title}
+            </option>
+          ))}
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Link an existing exam question bank to give this book a "Take the quiz" button — reuses that bank's
+          Practice/Exam modes as-is.
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          id="isPublished"
+          type="checkbox"
+          checked={isPublished}
+          onChange={(e) => setIsPublished(e.target.checked)}
+          className="h-4 w-4 rounded border-input"
+        />
+        <Label htmlFor="isPublished">Published (visible in the store)</Label>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={loading}>
           {loading ? "Saving…" : isEdit ? "Save changes" : "Create book"}
         </Button>
-        {isEdit && (
-          <Button type="button" variant="destructive" onClick={handleDelete} disabled={deleting}>
-            {deleting ? "Deleting…" : "Delete"}
-          </Button>
-        )}
       </div>
     </form>
   );

@@ -49,7 +49,7 @@ export default async function VocabListPage({
         }),
         db.vocabWord.count({ where }),
         db.vocabWord.count({ where: { bankId: { in: bankIds } } }),
-        db.book.findMany({
+        db.sourceBook.findMany({
           where: { words: { some: { bankId: { in: bankIds } } } },
           orderBy: { title: "asc" },
           select: { id: true, title: true },

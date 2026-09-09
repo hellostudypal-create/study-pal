@@ -9,7 +9,7 @@ export type StoreItem = {
   id: string;
   title: string;
   description: string | null;
-  kind: "exam" | "vocab";
+  kind: "exam" | "vocab" | "book";
   subtitle: string | null;
   itemCount: number;
   priceLabel: string | null;
@@ -21,6 +21,7 @@ const FILTERS = [
   { key: "all", dictKey: "store.all" },
   { key: "exam", dictKey: "store.exam" },
   { key: "vocab", dictKey: "store.vocabulary" },
+  { key: "book", dictKey: "store.books" },
 ] as const;
 
 export function StoreGrid({ items }: { items: StoreItem[] }) {
@@ -32,6 +33,7 @@ export function StoreGrid({ items }: { items: StoreItem[] }) {
       all: items.length,
       exam: items.filter((item) => item.kind === "exam").length,
       vocab: items.filter((item) => item.kind === "vocab").length,
+      book: items.filter((item) => item.kind === "book").length,
     }),
     [items]
   );
@@ -79,11 +81,14 @@ export function StoreGrid({ items }: { items: StoreItem[] }) {
   );
 }
 
+const KIND_LABEL_KEY = { exam: "store.exam", vocab: "store.vocabulary", book: "store.books" } as const;
+
 function StoreCard({ item }: { item: StoreItem }) {
   const { t } = useTranslation();
+  const href = item.kind === "book" ? `/store/books/${item.id}` : `/store/${item.id}`;
   return (
     <Link
-      href={`/store/${item.id}`}
+      href={href}
       className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-light-tint">
@@ -97,10 +102,10 @@ function StoreCard({ item }: { item: StoreItem }) {
         <span
           className={cn(
             "absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[11px] font-bold backdrop-blur",
-            item.kind === "exam" ? "bg-brand/85 text-white" : "bg-gold text-brand"
+            item.kind === "exam" ? "bg-brand/85 text-white" : item.kind === "book" ? "bg-primary/85 text-white" : "bg-gold text-brand"
           )}
         >
-          {item.kind === "exam" ? t("store.exam") : t("store.vocabulary")}
+          {t(KIND_LABEL_KEY[item.kind])}
         </span>
         {item.owned && (
           <span className="absolute right-2.5 top-2.5 rounded-full bg-success px-2.5 py-1 text-[11px] font-bold text-white">
@@ -127,7 +132,12 @@ function StoreCard({ item }: { item: StoreItem }) {
         )}
         <div className="mt-auto flex items-center justify-between pt-3">
           <span className="text-xs text-muted-foreground">
-            {item.itemCount} {item.kind === "exam" ? t("store.questionsCount") : t("store.wordsCount")}
+            {item.itemCount}{" "}
+            {item.kind === "exam"
+              ? t("store.questionsCount")
+              : item.kind === "book"
+                ? t("store.chaptersCount")
+                : t("store.wordsCount")}
           </span>
           <span className="text-xs font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
             {t("store.view")}

@@ -101,13 +101,13 @@ function ExamQuizPageInner() {
   useEffect(() => {
     if (autoStarted.current) return;
     autoStarted.current = true;
-    const urlBankId = searchParams.get("bankId");
+    const urlBankId = searchParams?.get("bankId");
     if (!urlBankId) return;
-    if (searchParams.get("mode") === "exam") {
+    if (searchParams?.get("mode") === "exam") {
       setTabMode("exam");
       openExamSets(urlBankId);
     } else {
-      const urlCount = Number(searchParams.get("count"));
+      const urlCount = Number(searchParams?.get("count"));
       if (urlCount > 0) setPracticeCount(urlCount);
       startPracticeQuiz(urlBankId, urlCount > 0 ? urlCount : undefined);
     }

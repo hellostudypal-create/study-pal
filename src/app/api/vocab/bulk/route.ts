@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   const bookIdByTitle = new Map<string, string>();
   for (const title of new Set(items.map((i) => i.sourceBook?.trim()).filter((t): t is string => !!t))) {
     const book =
-      (await db.book.findFirst({ where: { title } })) ?? (await db.book.create({ data: { title } }));
+      (await db.sourceBook.findFirst({ where: { title } })) ?? (await db.sourceBook.create({ data: { title } }));
     bookIdByTitle.set(title, book.id);
   }
 

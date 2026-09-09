@@ -18,6 +18,14 @@ export interface ParsedExamQuestion {
   options?: ParsedExamQuestionOption[];
 }
 
+export interface ParsedBookPhrase {
+  phrase: string;
+  translationSi?: string;
+  pronunciationSi?: string;
+  explanation: string;
+  explanationSi?: string;
+}
+
 export interface ParsedVocabWord {
   term: string;
   definition?: string;
@@ -222,6 +230,39 @@ export function parseVocabWordBlocks(text: string): {
       exampleSentence: fields.get("example") || undefined,
       sourceBook: fields.get("source") || undefined,
       chapter: fields.get("chapter") || undefined,
+    });
+  });
+
+  return { items, errors };
+}
+
+export function parseBookPhraseBlocks(text: string): {
+  items: ParsedBookPhrase[];
+  errors: ParseError[];
+} {
+  const items: ParsedBookPhrase[] = [];
+  const errors: ParseError[] = [];
+
+  splitBlocks(text).forEach((block, blockIndex) => {
+    const fields = parseFields(block, ["Phrase", "TranslationSi", "PronunciationSi", "Explanation", "ExplanationSi"]);
+    const phrase = (fields.get("phrase") ?? "").trim();
+    const explanation = (fields.get("explanation") ?? "").trim();
+
+    if (!phrase) {
+      errors.push({ blockIndex, message: "Missing \"Phrase:\" line" });
+      return;
+    }
+    if (!explanation) {
+      errors.push({ blockIndex, message: "Missing \"Explanation:\" line" });
+      return;
+    }
+
+    items.push({
+      phrase,
+      translationSi: fields.get("translationsi") || undefined,
+      pronunciationSi: fields.get("pronunciationsi") || undefined,
+      explanation,
+      explanationSi: fields.get("explanationsi") || undefined,
     });
   });
 

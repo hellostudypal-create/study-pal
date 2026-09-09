@@ -33,7 +33,7 @@ export default async function WordPage({
 
   if (!editable) {
     const book = word.bookId
-      ? await db.book.findUnique({ where: { id: word.bookId }, select: { title: true } })
+      ? await db.sourceBook.findUnique({ where: { id: word.bookId }, select: { title: true } })
       : null;
 
     return (
@@ -60,7 +60,7 @@ export default async function WordPage({
     );
   }
 
-  const books = await db.book.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } });
+  const books = await db.sourceBook.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } });
 
   return (
     <div className="space-y-6">

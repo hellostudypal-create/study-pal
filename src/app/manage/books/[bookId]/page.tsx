@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { BookForm } from "@/components/books/BookForm";
+import { ChapterList } from "@/components/books/ChapterList";
+import { BookEntitlementManager } from "@/components/books/BookEntitlementManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function BookDetailPage({
@@ -10,14 +11,22 @@ export default async function BookDetailPage({
   params: Promise<{ bookId: string }>;
 }) {
   const { bookId } = await params;
-  const book = await db.book.findUnique({ where: { id: bookId } });
-  if (!book) notFound();
+  const [book, quizBanks, chapters, entitlements] = await Promise.all([
+    db.book.findUnique({ where: { id: bookId } }),
+    db.bank.findMany({ where: { kind: "exam" }, orderBy: { title: "asc" }, select: { id: true, title: true } }),
+    db.bookChapter.findMany({
+      where: { bookId },
+      orderBy: { order: "asc" },
+      include: { _count: { select: { phrases: true } } },
+    }),
+    db.bookEntitlement.findMany({
+      where: { bookId },
+      include: { user: { select: { email: true, displayName: true } } },
+      orderBy: { grantedAt: "desc" },
+    }),
+  ]);
 
-  const words = await db.vocabWord.findMany({
-    where: { bookId },
-    orderBy: { term: "asc" },
-    select: { id: true, term: true },
-  });
+  if (!book) notFound();
 
   return (
     <div className="space-y-6">
@@ -29,11 +38,17 @@ export default async function BookDetailPage({
         </CardHeader>
         <CardContent>
           <BookForm
+            quizBanks={quizBanks}
             initial={{
               id: book.id,
               title: book.title,
               author: book.author ?? "",
               description: book.description ?? "",
+              coverImageUrl: book.coverImageUrl ?? "",
+              price: book.price?.toString() ?? "",
+              isPublished: book.isPublished,
+              quizBankId: book.quizBankId ?? "",
+              previewPhraseLimit: book.previewPhraseLimit.toString(),
             }}
           />
         </CardContent>
@@ -41,24 +56,36 @@ export default async function BookDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Words from this book ({words.length})</CardTitle>
+          <CardTitle className="text-base">Chapters ({chapters.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {words.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No words assigned to this book yet — pick it from the book field when adding or editing a word.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border rounded-md border border-border">
-              {words.map((word) => (
-                <li key={word.id} className="p-3 text-sm">
-                  <Link href={`/vocab/${word.id}`} className="hover:underline">
-                    {word.term}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ChapterList
+            bookId={book.id}
+            chapters={chapters.map((c) => ({
+              id: c.id,
+              title: c.title,
+              order: c.order,
+              isFreePreview: c.isFreePreview,
+              phraseCount: c._count.phrases,
+            }))}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Who has access</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <BookEntitlementManager
+            bookId={book.id}
+            initialEntitlements={entitlements.map((e) => ({
+              id: e.id,
+              source: e.source,
+              grantedAt: e.grantedAt.toISOString(),
+              user: e.user,
+            }))}
+          />
         </CardContent>
       </Card>
     </div>
