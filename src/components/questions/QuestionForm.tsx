@@ -27,9 +27,13 @@ export interface QuestionFormValues {
 export function QuestionForm({
   initial,
   bankId,
+  onSaved,
+  onDeleted,
 }: {
   initial?: QuestionFormValues;
   bankId?: string;
+  onSaved?: () => void;
+  onDeleted?: () => void;
 }) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -113,6 +117,10 @@ export function QuestionForm({
       return;
     }
 
+    if (onSaved) {
+      onSaved();
+      return;
+    }
     // Land on the edit page after creating, not the list - image upload
     // needs a question id, so this is the first point it's possible.
     router.push(isEdit ? "/questions" : `/questions/${data.question.id}`);
@@ -132,6 +140,10 @@ export function QuestionForm({
       return;
     }
 
+    if (onDeleted) {
+      onDeleted();
+      return;
+    }
     router.push("/questions");
     router.refresh();
   }

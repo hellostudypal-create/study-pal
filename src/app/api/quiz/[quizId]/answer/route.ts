@@ -35,11 +35,30 @@ export async function POST(
   if (!quiz || quiz.userId !== userId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  if (quiz.completedAt) {
+    return NextResponse.json({ error: "Quiz already completed" }, { status: 409 });
+  }
 
   const quizItem = await db.quizItem.findUnique({ where: { id: parsed.data.quizItemId } });
   if (!quizItem || quizItem.quizId !== quizId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  // Exam mode: just save the pick as a draft, ungraded. Correctness is
+  // computed for every item in one pass at /complete, so the learner can
+  // freely revisit and change answers while navigating between questions
+  // right up until they submit (or the timer runs out).
+  if (quiz.sessionMode === "exam") {
+    if (parsed.data.kind !== "verified_choice") {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+    await db.quizItem.update({
+      where: { id: quizItem.id },
+      data: { selectedAnswer: parsed.data.selectedAnswer },
+    });
+    return NextResponse.json({ saved: true });
+  }
+
   if (quizItem.answeredAt) {
     return NextResponse.json({ error: "Already answered" }, { status: 409 });
   }
@@ -78,6 +97,7 @@ export async function POST(
   await db.quizItem.update({
     where: { id: quizItem.id },
     data: {
+      selectedAnswer: parsed.data.kind === "verified_choice" ? parsed.data.selectedAnswer : null,
       wasCorrect,
       boxLevelAfter: transition.boxLevelAfter,
       pointsAwarded: transition.pointsAwarded,

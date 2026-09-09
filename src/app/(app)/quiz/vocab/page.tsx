@@ -11,12 +11,15 @@ import { McqCard, type McqItem } from "@/components/quiz/McqCard";
 import type { QuizAnswerResult } from "@/components/quiz/types";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
+const PRACTICE_COUNT_OPTIONS = [10, 20, 50, 100];
+
 function VocabQuizPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [phase, setPhase] = useState<"browse" | "loading" | "taking" | "error">("browse");
   const [error, setError] = useState<string | null>(null);
+  const [practiceCount, setPracticeCount] = useState(10);
   const [quizId, setQuizId] = useState<string | null>(null);
   const [items, setItems] = useState<McqItem[]>([]);
   const [index, setIndex] = useState(0);
@@ -65,17 +68,20 @@ function VocabQuizPageInner() {
     if (autoStarted.current) return;
     autoStarted.current = true;
     const urlBankId = searchParams.get("bankId");
-    if (urlBankId) startQuiz(urlBankId);
+    if (!urlBankId) return;
+    const urlCount = Number(searchParams.get("count"));
+    if (urlCount > 0) setPracticeCount(urlCount);
+    startQuiz(urlBankId, urlCount > 0 ? urlCount : undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function startQuiz(bankId?: string) {
+  async function startQuiz(bankId?: string, countOverride?: number) {
     setPhase("loading");
     setError(null);
     const res = await fetch("/api/quiz/vocab", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ count: 10, bankId: bankId || undefined }),
+      body: JSON.stringify({ count: countOverride ?? practiceCount, bankId: bankId || undefined }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -129,6 +135,17 @@ function VocabQuizPageInner() {
             <option value="title">{t("quiz.sortNameAZ")}</option>
             <option value="newest">{t("quiz.sortNewest")}</option>
             <option value="count">{t("quiz.sortMostWords")}</option>
+          </Select>
+          <Select
+            value={String(practiceCount)}
+            onChange={(e) => setPracticeCount(Number(e.target.value))}
+            className="sm:w-40"
+          >
+            {PRACTICE_COUNT_OPTIONS.map((n) => (
+              <option key={n} value={n}>
+                {t("quiz.wordCountOption", { count: n })}
+              </option>
+            ))}
           </Select>
           <Button variant="outline" onClick={() => startQuiz()}>
             {t("quiz.practiceAllSets")}
@@ -199,7 +216,16 @@ function VocabQuizPageInner() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t("quiz.vocabQuiz")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t("quiz.vocabQuiz")}</h1>
+          {item.bookTitle && (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {item.chapter
+                ? t("vocab.fromChapter", { book: item.bookTitle, chapter: item.chapter })
+                : t("vocab.from", { book: item.bookTitle })}
+            </p>
+          )}
+        </div>
         <span className="rounded-full bg-gold-tint px-3 py-1 text-sm font-bold text-gold-ink">
           {points} {t("quiz.pointsSuffix")}
         </span>

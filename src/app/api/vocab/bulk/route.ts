@@ -11,8 +11,10 @@ const bodySchema = z.object({
       z.object({
         term: z.string().min(1).max(200),
         definition: z.string().max(2000).optional(),
+        definitionSi: z.string().max(2000).optional(),
         exampleSentence: z.string().max(2000).optional(),
         sourceBook: z.string().max(300).optional(),
+        chapter: z.string().max(200).optional(),
       })
     )
     .min(1)

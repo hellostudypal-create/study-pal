@@ -9,11 +9,19 @@ import { QuizLayout } from "@/components/quiz/QuizLayout";
 import type { QuizAnswerResult } from "@/components/quiz/types";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
+export interface McqOption {
+  text: string;
+  textSi: string | null;
+}
+
 export interface McqItem {
   quizItemId: string;
   term: string;
+  definitionSi: string | null;
   exampleSentence: string | null;
-  options: string[] | null;
+  bookTitle: string | null;
+  chapter: string | null;
+  options: McqOption[] | null;
   correctAnswer: string | null;
 }
 
@@ -59,9 +67,23 @@ export function McqCard({
   );
 
   const solution = revealed ? (
-    <div className="rounded-sm bg-muted p-3.5">
-      <span className="text-sm font-semibold">{t("quizPlay.definition")}</span>
-      <p className="mt-1 text-sm">{item.correctAnswer}</p>
+    <div className="space-y-3 rounded-sm bg-muted p-3.5">
+      <div>
+        <span className="text-sm font-semibold">{t("quizPlay.definition")}</span>
+        <p className="mt-1 text-sm">{item.correctAnswer}</p>
+      </div>
+      {item.definitionSi && (
+        <div>
+          <span className="text-sm font-semibold">{t("vocab.definitionSiHeading")}</span>
+          <p className="mt-1 font-sinhala text-sm">{item.definitionSi}</p>
+        </div>
+      )}
+      {item.exampleSentence && (
+        <div>
+          <span className="text-sm font-semibold">{t("quizPlay.exampleUsage")}</span>
+          <p className="mt-1 text-sm italic">&ldquo;{item.exampleSentence}&rdquo;</p>
+        </div>
+      )}
     </div>
   ) : null;
 
@@ -69,12 +91,12 @@ export function McqCard({
     <>
       <div className="space-y-2.5">
         {item.options.map((option) => {
-          const isCorrect = option === item.correctAnswer;
-          const isSelected = option === selected;
+          const isCorrect = option.text === item.correctAnswer;
+          const isSelected = option.text === selected;
           return (
             <button
-              key={option}
-              onClick={() => handleChoice(option)}
+              key={option.text}
+              onClick={() => handleChoice(option.text)}
               disabled={revealed}
               className={cn(
                 "flex w-full items-center gap-3 rounded-sm border-[1.5px] p-3.5 text-left text-sm font-medium transition-all",
@@ -94,7 +116,10 @@ export function McqCard({
                 {revealed && isCorrect && <Check className="h-3.5 w-3.5" />}
                 {revealed && isSelected && !isCorrect && <X className="h-3.5 w-3.5" />}
               </span>
-              {option}
+              <span>
+                {option.text}
+                {option.textSi && <span className="mt-0.5 block font-sinhala text-xs font-normal opacity-80">{option.textSi}</span>}
+              </span>
             </button>
           );
         })}

@@ -8,6 +8,8 @@ const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).nullable().optional(),
   examCategory: z.enum(["IQ", "Grade5Scholarship", "OL", "AL", "GovAdmin", "Other"]).nullable().optional(),
+  standardExamQuestionCount: z.number().int().min(1).max(500).nullable().optional(),
+  examTimeLimitMinutes: z.number().int().min(1).max(600).nullable().optional(),
   theme: z.string().max(200).nullable().optional(),
   price: z.number().min(0).nullable().optional(),
   isPublished: z.boolean().optional(),

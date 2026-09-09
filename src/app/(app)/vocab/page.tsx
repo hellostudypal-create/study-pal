@@ -32,6 +32,7 @@ export default async function VocabListPage({
           OR: [
             { term: { contains: q, mode: "insensitive" as const } },
             { definition: { contains: q, mode: "insensitive" as const } },
+            { definitionSi: { contains: q, mode: "insensitive" as const } },
           ],
         }
       : {}),
@@ -150,9 +151,16 @@ export default async function VocabListPage({
                         {word.definition}
                       </p>
                     )}
+                    {word.definitionSi && (
+                      <p className="mt-0.5 line-clamp-1 font-sinhala text-sm text-muted-foreground">
+                        {word.definitionSi}
+                      </p>
+                    )}
                     {word.book && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        {t("vocab.from", { book: word.book.title })}
+                        {word.chapter
+                          ? t("vocab.fromChapter", { book: word.book.title, chapter: word.chapter })
+                          : t("vocab.from", { book: word.book.title })}
                       </p>
                     )}
                   </CardContent>

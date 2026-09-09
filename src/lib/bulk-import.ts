@@ -21,8 +21,10 @@ export interface ParsedExamQuestion {
 export interface ParsedVocabWord {
   term: string;
   definition?: string;
+  definitionSi?: string;
   exampleSentence?: string;
   sourceBook?: string;
+  chapter?: string;
 }
 
 function splitBlocks(text: string): string[] {
@@ -205,7 +207,7 @@ export function parseVocabWordBlocks(text: string): {
   const errors: ParseError[] = [];
 
   splitBlocks(text).forEach((block, blockIndex) => {
-    const fields = parseFields(block, ["Term", "Definition", "Example", "Source"]);
+    const fields = parseFields(block, ["Term", "Definition", "DefinitionSi", "Example", "Source", "Chapter"]);
     const term = (fields.get("term") ?? "").trim();
 
     if (!term) {
@@ -216,8 +218,10 @@ export function parseVocabWordBlocks(text: string): {
     items.push({
       term,
       definition: fields.get("definition") || undefined,
+      definitionSi: fields.get("definitionsi") || undefined,
       exampleSentence: fields.get("example") || undefined,
       sourceBook: fields.get("source") || undefined,
+      chapter: fields.get("chapter") || undefined,
     });
   });
 

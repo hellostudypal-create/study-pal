@@ -13,8 +13,10 @@ export interface WordFormValues {
   id?: string;
   term: string;
   definition: string;
+  definitionSi: string;
   exampleSentence: string;
   bookId: string;
+  chapter: string;
 }
 
 export interface WordFormBookOption {
@@ -26,10 +28,14 @@ export function WordForm({
   initial,
   books = [],
   bankId,
+  onSaved,
+  onDeleted,
 }: {
   initial?: WordFormValues;
   books?: WordFormBookOption[];
   bankId?: string;
+  onSaved?: () => void;
+  onDeleted?: () => void;
 }) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -37,8 +43,10 @@ export function WordForm({
 
   const [term, setTerm] = useState(initial?.term ?? "");
   const [definition, setDefinition] = useState(initial?.definition ?? "");
+  const [definitionSi, setDefinitionSi] = useState(initial?.definitionSi ?? "");
   const [exampleSentence, setExampleSentence] = useState(initial?.exampleSentence ?? "");
   const [bookId, setBookId] = useState(initial?.bookId ?? "");
+  const [chapter, setChapter] = useState(initial?.chapter ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -57,8 +65,10 @@ export function WordForm({
       body: JSON.stringify({
         term,
         definition: definition || undefined,
+        definitionSi: definitionSi || null,
         exampleSentence: exampleSentence || undefined,
         bookId: bookId || null,
+        chapter: chapter || null,
         ...(isEdit ? {} : { bankId }),
       }),
     });
@@ -71,6 +81,10 @@ export function WordForm({
       return;
     }
 
+    if (onSaved) {
+      onSaved();
+      return;
+    }
     router.push(!isEdit && bankId ? `/manage/banks/${bankId}` : "/vocab");
     router.refresh();
   }
@@ -88,6 +102,10 @@ export function WordForm({
       return;
     }
 
+    if (onDeleted) {
+      onDeleted();
+      return;
+    }
     router.push("/vocab");
     router.refresh();
   }
@@ -115,6 +133,16 @@ export function WordForm({
         />
       </div>
       <div className="space-y-1.5">
+        <Label htmlFor="definitionSi">{t("vocab.definitionSiLabel")}</Label>
+        <Textarea
+          id="definitionSi"
+          className="font-sinhala"
+          value={definitionSi}
+          onChange={(e) => setDefinitionSi(e.target.value)}
+          placeholder={t("vocab.definitionSiPlaceholder")}
+        />
+      </div>
+      <div className="space-y-1.5">
         <Label htmlFor="exampleSentence">{t("vocab.exampleLabel")}</Label>
         <Textarea
           id="exampleSentence"
@@ -123,16 +151,27 @@ export function WordForm({
           placeholder={t("vocab.examplePlaceholder")}
         />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="bookId">{t("vocab.bookLabel")}</Label>
-        <Select id="bookId" value={bookId} onChange={(e) => setBookId(e.target.value)}>
-          <option value="">{t("vocab.noBook")}</option>
-          {books.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.title}
-            </option>
-          ))}
-        </Select>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="bookId">{t("vocab.bookLabel")}</Label>
+          <Select id="bookId" value={bookId} onChange={(e) => setBookId(e.target.value)}>
+            <option value="">{t("vocab.noBook")}</option>
+            {books.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.title}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="chapter">{t("vocab.chapterLabel")}</Label>
+          <Input
+            id="chapter"
+            value={chapter}
+            onChange={(e) => setChapter(e.target.value)}
+            placeholder={t("vocab.chapterPlaceholder")}
+          />
+        </div>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 pt-2">
