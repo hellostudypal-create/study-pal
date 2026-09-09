@@ -40,7 +40,7 @@ export default async function QuizHubPage() {
           browseAllLabel={t("quiz.browseAll")}
           browseHref="/quiz/vocab"
           banks={vocabBanks}
-          quizHref={(id) => `/quiz/vocab?bankId=${id}`}
+          quizHref={(bank) => `/quiz/vocab?bankId=${bank.id}&count=${Math.min(bank._count.vocabWords, 100)}`}
           icon={BookOpen}
           accentClassName="bg-brand"
           countLabel={t("quiz.wordsCount")}
@@ -53,7 +53,11 @@ export default async function QuizHubPage() {
           browseAllLabel={t("quiz.browseAll")}
           browseHref="/quiz/exam"
           banks={examBanks}
-          quizHref={(id) => `/quiz/exam?bankId=${id}`}
+          quizHref={(bank) =>
+            bank.standardExamQuestionCount
+              ? `/quiz/exam?bankId=${bank.id}&mode=exam`
+              : `/quiz/exam?bankId=${bank.id}&count=${Math.min(bank._count.examQuestions, 100)}`
+          }
           icon={HelpCircle}
           accentClassName="bg-brand-2"
           countLabel={t("quiz.questionsCount")}
@@ -88,7 +92,7 @@ function BankSection({
   browseAllLabel: string;
   browseHref: string;
   banks: BankWithCount[];
-  quizHref: (id: string) => string;
+  quizHref: (bank: BankWithCount) => string;
   icon: typeof BookOpen;
   accentClassName: string;
   countLabel: string;
@@ -106,7 +110,7 @@ function BankSection({
           const count = bank.kind === "exam" ? bank._count.examQuestions : bank._count.vocabWords;
           const subtitle = bank.kind === "exam" ? bank.examCategory : bank.theme;
           return (
-            <Link key={bank.id} href={quizHref(bank.id)} className={bankCardClassName}>
+            <Link key={bank.id} href={quizHref(bank)} className={bankCardClassName}>
               <BankCardContent
                 bank={{ id: bank.id, title: bank.title, subtitle, count, countLabel }}
                 icon={Icon}

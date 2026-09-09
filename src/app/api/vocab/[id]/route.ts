@@ -7,8 +7,10 @@ import { loadVocabWordForEdit, loadVocabWordForRead } from "@/lib/authz";
 const updateSchema = z.object({
   term: z.string().min(1).max(200).optional(),
   definition: z.string().max(2000).nullable().optional(),
+  definitionSi: z.string().max(2000).nullable().optional(),
   exampleSentence: z.string().max(2000).nullable().optional(),
   bookId: z.string().uuid().nullable().optional(),
+  chapter: z.string().max(200).nullable().optional(),
 });
 
 export async function GET(

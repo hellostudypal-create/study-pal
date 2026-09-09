@@ -7,8 +7,10 @@ import { assertCanEditBank, getEntitledBankIds, getOrCreatePersonalBank } from "
 const createSchema = z.object({
   term: z.string().min(1).max(200),
   definition: z.string().max(2000).optional(),
+  definitionSi: z.string().max(2000).nullable().optional(),
   exampleSentence: z.string().max(2000).optional(),
   bookId: z.string().uuid().nullable().optional(),
+  chapter: z.string().max(200).nullable().optional(),
   bankId: z.string().uuid().optional(),
 });
 
@@ -31,6 +33,7 @@ export async function GET(req: Request) {
             OR: [
               { term: { contains: q, mode: "insensitive" } },
               { definition: { contains: q, mode: "insensitive" } },
+              { definitionSi: { contains: q, mode: "insensitive" } },
             ],
           }
         : {}),

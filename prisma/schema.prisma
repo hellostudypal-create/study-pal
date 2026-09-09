@@ -82,24 +82,27 @@ enum ExamCategory {
 }
 
 model Bank {
-  id           String        @id @default(uuid())
-  kind         BankKind
-  title        String
-  description  String?
-  examCategory ExamCategory? @map("exam_category")
-  theme        String?
-  price        Decimal?      @db.Decimal(10, 2)
-  isPublished  Boolean       @default(false) @map("is_published")
-  isPersonal   Boolean       @default(false) @map("is_personal")
-  ownerUserId  String?       @map("owner_user_id")
-  owner        User?         @relation("BankOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  id                         String        @id @default(uuid())
+  kind                       BankKind
+  title                      String
+  description                String?
+  examCategory               ExamCategory? @map("exam_category")
+  standardExamQuestionCount  Int?          @map("standard_exam_question_count")
+  examTimeLimitMinutes       Int?          @map("exam_time_limit_minutes")
+  theme                      String?
+  price                      Decimal?      @db.Decimal(10, 2)
+  isPublished                Boolean       @default(false) @map("is_published")
+  isPersonal                 Boolean       @default(false) @map("is_personal")
+  ownerUserId                String?       @map("owner_user_id")
+  owner                      User?         @relation("BankOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  createdAt                  DateTime      @default(now()) @map("created_at")
+  updatedAt                  DateTime      @updatedAt @map("updated_at")
 
   examQuestions ExamQuestion[]
   vocabWords    VocabWord[]
   entitlements  Entitlement[]
   editors       BankEditor[]
+  quizzes       Quiz[]
 
   @@index([kind, isPublished, isPersonal])
   @@map("banks")
@@ -161,8 +164,10 @@ model VocabWord {
   user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   bookId          String?  @map("book_id")
   book            Book?    @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  chapter         String?
   term            String
   definition      String?
+  definitionSi    String?  @map("definition_si")
   exampleSentence String?  @map("example_sentence")
   boxLevel        Int      @default(0) @map("box_level")
   nextReviewAt    DateTime @default(now()) @map("next_review_at")
@@ -251,20 +256,31 @@ enum QuizMode {
   self_graded
 }
 
+enum QuizSessionMode {
+  practice
+  exam
+}
+
 model Quiz {
-  id             String    @id @default(uuid())
-  userId         String    @map("user_id")
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quizType       QuizType  @map("quiz_type")
-  mode           QuizMode
-  startedAt      DateTime  @default(now()) @map("started_at")
-  completedAt    DateTime? @map("completed_at")
-  totalQuestions Int       @map("total_questions")
-  pointsEarned   Int       @default(0) @map("points_earned")
+  id               String          @id @default(uuid())
+  userId           String          @map("user_id")
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankId           String?         @map("bank_id")
+  bank             Bank?           @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  quizType         QuizType        @map("quiz_type")
+  mode             QuizMode
+  sessionMode      QuizSessionMode @default(practice) @map("session_mode")
+  setIndex         Int?            @map("set_index")
+  timeLimitSeconds Int?            @map("time_limit_seconds")
+  startedAt        DateTime        @default(now()) @map("started_at")
+  completedAt      DateTime?       @map("completed_at")
+  totalQuestions   Int             @map("total_questions")
+  pointsEarned     Int             @default(0) @map("points_earned")
 
   items QuizItem[]
 
   @@index([userId, startedAt])
+  @@index([bankId, sessionMode, setIndex])
   @@map("quizzes")
 }
 
@@ -281,6 +297,7 @@ model QuizItem {
   examQuestionId String?    @map("exam_question_id")
   order          Int        @default(0)
   answerKind     AnswerKind @default(self_assessed) @map("answer_kind")
+  selectedAnswer String?    @map("selected_answer")
   wasCorrect     Boolean?   @map("was_correct")
   boxLevelBefore Int        @map("box_level_before")
   boxLevelAfter  Int?       @map("box_level_after")

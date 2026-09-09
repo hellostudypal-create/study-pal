@@ -43,7 +43,7 @@ export default async function StoreBankPage({
     bank.kind === "vocab"
       ? await db.vocabWord.findMany({
           where: { bankId: bank.id },
-          select: { id: true, term: true, definition: true },
+          select: { id: true, term: true, definition: true, definitionSi: true },
           orderBy: { createdAt: "asc" },
           take: 3,
         })
@@ -111,6 +111,7 @@ export default async function StoreBankPage({
               <div key={w.id} className="rounded-sm bg-muted p-3">
                 <p className="text-sm font-semibold">{w.term}</p>
                 {w.definition && <p className="text-sm text-muted-foreground">{w.definition}</p>}
+                {w.definitionSi && <p className="font-sinhala text-sm text-muted-foreground">{w.definitionSi}</p>}
               </div>
             ))}
           </div>

@@ -7,6 +7,7 @@ export interface BankCardData {
   subtitle?: string | null;
   count: number;
   countLabel: string;
+  standardExamQuestionCount?: number | null;
 }
 
 export const bankCardClassName =

@@ -16,6 +16,8 @@ export interface BankFormValues {
   title: string;
   description: string;
   examCategory: string;
+  standardExamQuestionCount: string;
+  examTimeLimitMinutes: string;
   theme: string;
   price: string;
   isPublished: boolean;
@@ -29,6 +31,10 @@ export function BankForm({ initial }: { initial?: BankFormValues }) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [examCategory, setExamCategory] = useState(initial?.examCategory ?? "IQ");
+  const [standardExamQuestionCount, setStandardExamQuestionCount] = useState(
+    initial?.standardExamQuestionCount ?? ""
+  );
+  const [examTimeLimitMinutes, setExamTimeLimitMinutes] = useState(initial?.examTimeLimitMinutes ?? "");
   const [theme, setTheme] = useState(initial?.theme ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
   const [isPublished, setIsPublished] = useState(initial?.isPublished ?? false);
@@ -51,6 +57,9 @@ export function BankForm({ initial }: { initial?: BankFormValues }) {
         title,
         description: description || undefined,
         examCategory: kind === "exam" ? examCategory : undefined,
+        standardExamQuestionCount:
+          kind === "exam" && standardExamQuestionCount ? Number(standardExamQuestionCount) : null,
+        examTimeLimitMinutes: kind === "exam" && examTimeLimitMinutes ? Number(examTimeLimitMinutes) : null,
         theme: kind === "vocab" ? theme || undefined : undefined,
         price: price ? Number(price) : undefined,
         isPublished,
@@ -103,16 +112,48 @@ export function BankForm({ initial }: { initial?: BankFormValues }) {
         />
       </div>
       {kind === "exam" ? (
-        <div className="space-y-1.5">
-          <Label htmlFor="examCategory">Category</Label>
-          <Select id="examCategory" value={examCategory} onChange={(e) => setExamCategory(e.target.value)}>
-            {EXAM_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </Select>
-        </div>
+        <>
+          <div className="space-y-1.5">
+            <Label htmlFor="examCategory">Category</Label>
+            <Select id="examCategory" value={examCategory} onChange={(e) => setExamCategory(e.target.value)}>
+              {EXAM_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="standardExamQuestionCount">Questions per exam</Label>
+              <Input
+                id="standardExamQuestionCount"
+                type="number"
+                min="1"
+                step="1"
+                value={standardExamQuestionCount}
+                onChange={(e) => setStandardExamQuestionCount(e.target.value)}
+                placeholder="e.g. 50"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="examTimeLimitMinutes">Time limit (minutes)</Label>
+              <Input
+                id="examTimeLimitMinutes"
+                type="number"
+                min="1"
+                step="1"
+                value={examTimeLimitMinutes}
+                onChange={(e) => setExamTimeLimitMinutes(e.target.value)}
+                placeholder="e.g. 60"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Set both to split this bank into standard, non-overlapping timed exams (Set 1, Set 2, …) in Exam mode.
+            Leave blank to only offer untimed Practice mode.
+          </p>
+        </>
       ) : (
         <div className="space-y-1.5">
           <Label htmlFor="theme">Theme / source</Label>

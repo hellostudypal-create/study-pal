@@ -49,8 +49,10 @@ export default async function WordPage({
             <WordDetail
               term={word.term}
               definition={word.definition}
+              definitionSi={word.definitionSi}
               exampleSentence={word.exampleSentence}
               bookTitle={book?.title}
+              chapter={word.chapter}
             />
           </CardContent>
         </Card>
@@ -74,8 +76,10 @@ export default async function WordPage({
               id: word.id,
               term: word.term,
               definition: word.definition ?? "",
+              definitionSi: word.definitionSi ?? "",
               exampleSentence: word.exampleSentence ?? "",
               bookId: word.bookId ?? "",
+              chapter: word.chapter ?? "",
             }}
           />
         </CardContent>

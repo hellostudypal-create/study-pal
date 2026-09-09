@@ -30,8 +30,10 @@ Correct: B
 
 const VOCAB_PLACEHOLDER = `Term: ephemeral
 Definition: lasting for a very short time
+DefinitionSi: ඉතා කෙටි කලක් පවතින
 Example: The beauty of cherry blossoms is ephemeral.
 Source: Alice in Wonderland
+Chapter: 3
 ---
 `;
 
@@ -134,6 +136,14 @@ export function BulkImportForm({ bankId, kind }: { bankId: string; kind: "exam" 
                       <li key={i} className="space-y-1 p-3 text-sm">
                         <p className="font-medium">{item.term}</p>
                         {item.definition && <p className="text-muted-foreground">{item.definition}</p>}
+                        {item.definitionSi && (
+                          <p className="font-sinhala text-muted-foreground">{item.definitionSi}</p>
+                        )}
+                        {(item.sourceBook || item.chapter) && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {[item.sourceBook, item.chapter && `Ch. ${item.chapter}`].filter(Boolean).join(" · ")}
+                          </Badge>
+                        )}
                       </li>
                     ))}
               </ul>

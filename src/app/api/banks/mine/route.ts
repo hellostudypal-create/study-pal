@@ -52,6 +52,7 @@ export async function GET(req: Request) {
       title: bank.title,
       subtitle: bank.kind === "exam" ? bank.examCategory : bank.theme,
       count: bank.kind === "exam" ? bank._count.examQuestions : bank._count.vocabWords,
+      standardExamQuestionCount: bank.kind === "exam" ? bank.standardExamQuestionCount : null,
     })),
     total,
     page,

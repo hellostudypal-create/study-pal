@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
-import { assembleVocabQuiz, pickDistractors } from "@/lib/quiz-assembly";
+import { assembleVocabQuiz, pickDistractors, type DistractorOption } from "@/lib/quiz-assembly";
 import { assertEntitled } from "@/lib/authz";
 import type { VocabWord } from "@prisma/client";
 
 const bodySchema = z.object({
-  count: z.number().int().min(1).max(50).default(10),
+  count: z.number().int().min(1).max(100).default(10),
   bankId: z.string().uuid().optional(),
 });
 
@@ -32,15 +32,15 @@ export async function POST(req: Request) {
     );
   }
 
-  const items: { word: VocabWord; options: string[] | null }[] = [];
+  const items: { word: VocabWord; options: DistractorOption[] | null }[] = [];
   for (const word of words) {
     const distractors = word.definition
       ? await pickDistractors(userId, word.id, 3, bankId)
       : null;
 
-    let options: string[] | null = null;
+    let options: DistractorOption[] | null = null;
     if (distractors && word.definition) {
-      options = [...distractors, word.definition];
+      options = [...distractors, { text: word.definition, textSi: word.definitionSi }];
       for (let i = options.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [options[i], options[j]] = [options[j], options[i]];
@@ -51,6 +51,10 @@ export async function POST(req: Request) {
   }
 
   const mode = items.some((i) => i.options !== null) ? "multiple_choice" : "self_graded";
+
+  const bookIds = [...new Set(items.map((i) => i.word.bookId).filter((id): id is string => id !== null))];
+  const books = bookIds.length > 0 ? await db.book.findMany({ where: { id: { in: bookIds } } }) : [];
+  const bookTitleById = new Map(books.map((b) => [b.id, b.title]));
 
   const quiz = await db.quiz.create({
     data: {
@@ -76,7 +80,10 @@ export async function POST(req: Request) {
       quizItemId: quizItem.id,
       vocabWordId: item.word.id,
       term: item.word.term,
+      definitionSi: item.word.definitionSi,
       exampleSentence: item.word.exampleSentence,
+      bookTitle: item.word.bookId ? bookTitleById.get(item.word.bookId) ?? null : null,
+      chapter: item.word.chapter,
       options: item.options,
       correctAnswer: item.word.definition,
     };
