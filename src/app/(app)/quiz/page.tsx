@@ -112,7 +112,7 @@ function BankSection({
           return (
             <Link key={bank.id} href={quizHref(bank)} className={bankCardClassName}>
               <BankCardContent
-                bank={{ id: bank.id, title: bank.title, subtitle, count, countLabel }}
+                bank={{ id: bank.id, title: bank.title, subtitle, count, countLabel, coverImageUrl: bank.coverImageUrl }}
                 icon={Icon}
                 accentClassName={accentClassName}
               />

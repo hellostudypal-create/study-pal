@@ -26,7 +26,7 @@ export default async function StorePage() {
     itemCount: bank.kind === "exam" ? bank._count.examQuestions : bank._count.vocabWords,
     priceLabel: bank.price != null ? `Rs. ${Number(bank.price).toLocaleString()}` : null,
     owned: ownedBankIds.includes(bank.id),
-    imageUrl: `https://picsum.photos/seed/studypal-${bank.id}/480/360`,
+    imageUrl: bank.coverImageUrl ?? `https://picsum.photos/seed/studypal-${bank.id}/480/360`,
   }));
 
   return (

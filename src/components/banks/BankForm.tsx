@@ -15,6 +15,7 @@ export interface BankFormValues {
   kind: "exam" | "vocab";
   title: string;
   description: string;
+  coverImageUrl: string;
   examCategory: string;
   standardExamQuestionCount: string;
   examTimeLimitMinutes: string;
@@ -30,6 +31,7 @@ export function BankForm({ initial }: { initial?: BankFormValues }) {
   const [kind, setKind] = useState<"exam" | "vocab">(initial?.kind ?? "exam");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [coverImageUrl, setCoverImageUrl] = useState(initial?.coverImageUrl ?? "");
   const [examCategory, setExamCategory] = useState(initial?.examCategory ?? "IQ");
   const [standardExamQuestionCount, setStandardExamQuestionCount] = useState(
     initial?.standardExamQuestionCount ?? ""
@@ -56,6 +58,7 @@ export function BankForm({ initial }: { initial?: BankFormValues }) {
         ...(isEdit ? {} : { kind }),
         title,
         description: description || undefined,
+        coverImageUrl: coverImageUrl.trim() || null,
         examCategory: kind === "exam" ? examCategory : undefined,
         standardExamQuestionCount:
           kind === "exam" && standardExamQuestionCount ? Number(standardExamQuestionCount) : null,
@@ -110,6 +113,29 @@ export function BankForm({ initial }: { initial?: BankFormValues }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="What's in this bank, shown to buyers"
         />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="coverImageUrl">Cover image URL</Label>
+        <div className="flex items-start gap-3">
+          <Input
+            id="coverImageUrl"
+            type="url"
+            value={coverImageUrl}
+            onChange={(e) => setCoverImageUrl(e.target.value)}
+            placeholder="https://i.ibb.co/…"
+            className="flex-1"
+          />
+          {coverImageUrl.trim() && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverImageUrl.trim()}
+              alt=""
+              className="h-14 w-20 shrink-0 rounded-md border border-border object-cover"
+              onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+            />
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">Paste a hosted image link (e.g. from imgbb) — shown on bank cards and the store page.</p>
       </div>
       {kind === "exam" ? (
         <>

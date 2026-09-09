@@ -7,6 +7,7 @@ import { assertCanEditBank } from "@/lib/authz";
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).nullable().optional(),
+  coverImageUrl: z.string().trim().url().max(1000).nullable().optional(),
   examCategory: z.enum(["IQ", "Grade5Scholarship", "OL", "AL", "GovAdmin", "Other"]).nullable().optional(),
   standardExamQuestionCount: z.number().int().min(1).max(500).nullable().optional(),
   examTimeLimitMinutes: z.number().int().min(1).max(600).nullable().optional(),
