@@ -13,8 +13,11 @@ export default async function QuizHubPage() {
   const userId = await getCurrentUserId();
   const t = await getT();
 
+  const isCustomer = userId
+    ? (await db.user.findUnique({ where: { id: userId }, select: { role: true } }))?.role === "customer"
+    : false;
   const [vocabBanks, examBanks] = userId
-    ? await Promise.all([loadBanks(userId, "vocab"), loadBanks(userId, "exam")])
+    ? await Promise.all([loadBanks(userId, "vocab", isCustomer), loadBanks(userId, "exam", isCustomer)])
     : [[], []];
 
   return (
@@ -67,10 +70,17 @@ export default async function QuizHubPage() {
   );
 }
 
-async function loadBanks(userId: string, kind: "vocab" | "exam") {
+async function loadBanks(userId: string, kind: "vocab" | "exam", isCustomer: boolean) {
   const bankIds = await getEntitledBankIds(userId, kind);
   return db.bank.findMany({
-    where: { id: { in: bankIds } },
+    where: {
+      id: { in: bankIds },
+      // Personal banks are always empty for customers right now - writes
+      // to them are disabled until we ship the "build your own bank"
+      // feature (see canEditBank in src/lib/authz.ts) - so don't clutter
+      // the list with an unusable card.
+      ...(isCustomer ? { isPersonal: false } : {}),
+    },
     orderBy: { title: "asc" },
     include: { _count: { select: { examQuestions: true, vocabWords: true } } },
   });
@@ -105,7 +115,7 @@ function BankSection({
           {browseAllLabel}
         </Link>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {banks.slice(0, SETS_SHOWN).map((bank) => {
           const count = bank.kind === "exam" ? bank._count.examQuestions : bank._count.vocabWords;
           const subtitle = bank.kind === "exam" ? bank.examCategory : bank.theme;

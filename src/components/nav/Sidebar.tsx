@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/nav/BottomNav";
-import { ThemeToggle } from "@/components/nav/ThemeToggle";
-import { LanguageToggle } from "@/components/nav/LanguageToggle";
 import { Logo, LogoBadge } from "@/components/brand/Logo";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
@@ -14,12 +12,14 @@ export function Sidebar({
   userName,
   signOutAction,
   isAdmin,
+  isCustomer,
   collapsed = false,
   onToggle,
 }: {
   userName: string | null | undefined;
   signOutAction: () => Promise<void>;
   isAdmin: boolean;
+  isCustomer: boolean;
   collapsed?: boolean;
   onToggle?: () => void;
 }) {
@@ -44,25 +44,12 @@ export function Sidebar({
         </button>
       )}
 
-      <div className={cn("flex items-center pb-6", collapsed ? "justify-center px-0" : "justify-between px-2")}>
+      <div className={cn("flex items-center pb-6", collapsed ? "justify-center px-0" : "px-2")}>
         {collapsed ? <LogoBadge /> : <Logo textClassName="text-base font-extrabold tracking-tight" />}
-        {!collapsed && (
-          <div className="flex shrink-0 items-center gap-0.5">
-            <LanguageToggle className="h-7 w-7" />
-            <ThemeToggle className="h-7 w-7" />
-          </div>
-        )}
       </div>
 
-      {collapsed && (
-        <div className="flex flex-col items-center gap-1 pb-4">
-          <LanguageToggle />
-          <ThemeToggle />
-        </div>
-      )}
-
       <nav className="flex flex-1 flex-col gap-1">
-        {navItems.map(({ href, key, icon: Icon }) => {
+        {navItems.filter((item) => item.customerVisible || !isCustomer).map(({ href, key, icon: Icon }) => {
           const active = pathname === href || pathname?.startsWith(href + "/");
           return (
             <Link

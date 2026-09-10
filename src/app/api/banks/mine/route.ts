@@ -20,10 +20,16 @@ export async function GET(req: Request) {
   const sort = searchParams.get("sort") ?? "title";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
 
+  const user = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
   const bankIds = await getEntitledBankIds(userId, kind);
   const where: Prisma.BankWhereInput = {
     id: { in: bankIds },
     ...(q ? { title: { contains: q, mode: "insensitive" } } : {}),
+    // Every user gets a personal vocab/exam bank auto-provisioned (see
+    // getOrCreatePersonalBank), but customer writes to it are disabled for
+    // now (see canEditBank in src/lib/authz.ts) - so for a customer it's
+    // always an empty, unusable card. Hide it until that feature ships.
+    ...(user?.role === "customer" ? { isPersonal: false } : {}),
   };
 
   const orderBy: Prisma.BankOrderByWithRelationInput =
