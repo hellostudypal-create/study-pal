@@ -24,7 +24,14 @@ export async function canEditBank(userId: string, bankId: string): Promise<boole
 
   const bank = await db.bank.findUnique({ where: { id: bankId }, select: { isPersonal: true, ownerUserId: true } });
   if (!bank) return false;
-  if (bank.isPersonal && bank.ownerUserId === userId) return true;
+  // Every user gets a personal vocab/exam bank auto-provisioned at signup
+  // (see getOrCreatePersonalBank / the register route), intended as a "build
+  // your own vocab/question bank" feature. That feature isn't ready to ship
+  // to customers yet - content creation is admin/content-editor work for
+  // now - so customer writes are blocked here even though they own the
+  // bank. Flip this back to `true` (or add a role check) once we decide to
+  // let customers curate their own banks.
+  if (bank.isPersonal && bank.ownerUserId === userId) return user.role !== "customer";
 
   if (user.role === "content_editor") {
     const editor = await db.bankEditor.findUnique({ where: { userId_bankId: { userId, bankId } } });

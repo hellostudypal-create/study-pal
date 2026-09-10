@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { LogOut, Settings } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { SidebarShell } from "@/components/nav/SidebarShell";
-import { ThemeToggle } from "@/components/nav/ThemeToggle";
-import { LanguageToggle } from "@/components/nav/LanguageToggle";
+import { LogoBadge } from "@/components/brand/Logo";
 import { getT } from "@/lib/i18n/translate";
 
 async function signOutAction() {
@@ -19,6 +19,11 @@ export default async function AppLayout({
 }) {
   const session = await auth();
   const isAdmin = session?.user?.role === "admin";
+  // Default to treating a missing role as a customer (fails closed): a
+  // signed-in session should always carry a role, but if it somehow
+  // doesn't, hide the not-yet-enabled personal vocab/question bank nav
+  // items rather than show them.
+  const isCustomer = (session?.user?.role ?? "customer") === "customer";
   const t = await getT();
   const cookieStore = await cookies();
   const sidebarCollapsed = cookieStore.get("sidebar-collapsed")?.value === "1";
@@ -27,30 +32,31 @@ export default async function AppLayout({
     <div className="min-h-screen bg-brand-light-tint">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <span className="text-lg font-extrabold tracking-tight">{t("nav.appName")}</span>
-          <div className="flex items-center gap-3">
+          <Link href="/dashboard" aria-label={t("nav.appName")}>
+            <LogoBadge />
+          </Link>
+          <div className="flex items-center gap-1.5">
             {isAdmin && (
               <Link
                 href="/manage"
-                className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                title={t("nav.manage")}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
               >
-                {t("nav.manage")}
+                <Settings className="h-[18px] w-[18px]" />
               </Link>
             )}
-            <Link
-              href="/account"
-              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            >
-              {session?.user?.name}
+            <Link href="/account" title={t("account.title")}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold text-xs font-bold text-brand">
+                {session?.user?.name?.slice(0, 2).toUpperCase() ?? "?"}
+              </div>
             </Link>
-            <LanguageToggle />
-            <ThemeToggle />
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                title={t("nav.signOut")}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
               >
-                {t("nav.signOut")}
+                <LogOut className="h-[18px] w-[18px]" />
               </button>
             </form>
           </div>
@@ -62,6 +68,7 @@ export default async function AppLayout({
         userName={session?.user?.name}
         signOutAction={signOutAction}
         isAdmin={isAdmin}
+        isCustomer={isCustomer}
       >
         {children}
       </SidebarShell>

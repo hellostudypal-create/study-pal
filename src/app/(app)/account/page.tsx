@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AccountForm } from "@/components/account/AccountForm";
 import { PasswordForm } from "@/components/account/PasswordForm";
 import { LanguageToggle } from "@/components/nav/LanguageToggle";
+import { ThemeToggle } from "@/components/nav/ThemeToggle";
 import { getT } from "@/lib/i18n/translate";
 
 export default async function AccountPage() {
@@ -62,6 +63,16 @@ export default async function AccountPage() {
         <CardContent className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{t("account.languageHint")}</p>
           <LanguageToggle className="h-9 w-9 border border-border" />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("account.appearance")}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">{t("account.appearanceHint")}</p>
+          <ThemeToggle className="h-9 w-9 border border-border" />
         </CardContent>
       </Card>
     </div>

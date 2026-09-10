@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getOrCreatePersonalBank } from "@/lib/authz";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -42,8 +41,13 @@ export async function POST(req: Request) {
     select: { id: true, email: true },
   });
 
-  await getOrCreatePersonalBank(user.id, "exam");
-  await getOrCreatePersonalBank(user.id, "vocab");
+  // New signups used to get an empty personal vocab/exam bank provisioned
+  // here (see getOrCreatePersonalBank in src/lib/authz.ts), for a "build
+  // your own bank" feature. Customer writes to personal banks are disabled
+  // for now (see canEditBank), so provisioning one up front just leaves a
+  // permanently-empty, unusable bank cluttering the customer's quiz page.
+  // getOrCreatePersonalBank still runs lazily wherever it's needed, so
+  // re-enabling the feature later doesn't require touching this route.
 
   return NextResponse.json({ user }, { status: 201 });
 }

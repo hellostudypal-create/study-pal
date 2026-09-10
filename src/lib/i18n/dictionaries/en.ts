@@ -20,6 +20,7 @@ export const en = {
     books: "Books",
     quiz: "Quiz",
     progress: "Progress",
+    store: "Store",
     manage: "Manage",
     signOut: "Sign out",
     toggleTheme: "Toggle dark mode",
@@ -259,6 +260,8 @@ export const en = {
     languageHint: "Choose the language used across the app.",
     english: "English",
     sinhala: "Sinhala",
+    appearance: "Appearance",
+    appearanceHint: "Switch between light and dark mode.",
     emailInUse: "An account with this email already exists",
     wrongPassword: "Current password is incorrect",
     roleCustomer: "Customer",
@@ -301,6 +304,10 @@ export const en = {
     takeTheQuiz: "Take the quiz",
     noPhrasesYet: "No phrases in this chapter yet.",
     downloadPdf: "Download PDF",
+    chapterLabel: "Chapter {number}",
+    previous: "Previous",
+    next: "Next",
+    pageOf: "Page {page} of {total}",
   },
 } as const;
 
