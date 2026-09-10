@@ -108,6 +108,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const token = await getToken({
     req: { headers: { cookie: req.headers.cookie ?? "" } },
     secret: process.env.NEXTAUTH_SECRET,
+    // Auth.js prefixes its session cookie with "__Secure-" whenever the
+    // request is served over https (production on Vercel). getToken()
+    // defaults secureCookie to false, so without this it looks up the
+    // wrong cookie name in production and silently returns null.
+    secureCookie: process.env.NODE_ENV === "production",
   });
   const userId = token?.id as string | undefined;
   if (!userId) {
