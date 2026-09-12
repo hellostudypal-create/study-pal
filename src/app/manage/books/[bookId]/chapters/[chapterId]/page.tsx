@@ -19,7 +19,9 @@ export default async function ChapterDetailPage({
   const phrases = await db.bookPhrase.findMany({
     where: { chapterId },
     orderBy: { order: "asc" },
+    include: { reviewedBy: { select: { displayName: true, email: true } } },
   });
+  const reviewedCount = phrases.filter((p) => p.isReviewed).length;
 
   return (
     <div className="space-y-6">
@@ -51,6 +53,9 @@ export default async function ChapterDetailPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Phrases ({phrases.length})</CardTitle>
+          <CardDescription>
+            {reviewedCount} of {phrases.length} reviewed. Only reviewed phrases are visible to customers.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <PhraseContentAccordion
@@ -63,6 +68,9 @@ export default async function ChapterDetailPage({
               pronunciationSi: p.pronunciationSi,
               explanation: p.explanation,
               explanationSi: p.explanationSi,
+              isReviewed: p.isReviewed,
+              reviewedAt: p.reviewedAt ? p.reviewedAt.toISOString() : null,
+              reviewedByName: p.reviewedBy ? p.reviewedBy.displayName ?? p.reviewedBy.email : null,
             }))}
           />
         </CardContent>
