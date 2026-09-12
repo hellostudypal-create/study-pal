@@ -157,6 +157,7 @@ model Book {
   price              Decimal? @db.Decimal(10, 2)
   isPublished        Boolean  @default(false) @map("is_published")
   previewPhraseLimit Int      @default(5) @map("preview_phrase_limit")
+  speechEnabled      Boolean  @default(true) @map("speech_enabled")
   quizBankId         String?  @map("quiz_bank_id")
   quizBank           Bank?    @relation(fields: [quizBankId], references: [id], onDelete: SetNull)
   createdAt          DateTime @default(now()) @map("created_at")

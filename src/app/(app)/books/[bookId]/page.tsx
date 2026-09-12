@@ -122,7 +122,12 @@ export default async function BookReaderPage({
             <>
               <div className="space-y-3">
                 {phrases.map((phrase, index) => (
-                  <PhraseCard key={phrase.id} phrase={phrase} number={(page - 1) * PHRASES_PER_PAGE + index + 1} />
+                  <PhraseCard
+                    key={phrase.id}
+                    phrase={phrase}
+                    number={(page - 1) * PHRASES_PER_PAGE + index + 1}
+                    speechEnabled={book.speechEnabled}
+                  />
                 ))}
               </div>
 

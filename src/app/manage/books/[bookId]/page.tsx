@@ -49,6 +49,7 @@ export default async function BookDetailPage({
               isPublished: book.isPublished,
               quizBankId: book.quizBankId ?? "",
               previewPhraseLimit: book.previewPhraseLimit.toString(),
+              speechEnabled: book.speechEnabled,
             }}
           />
         </CardContent>

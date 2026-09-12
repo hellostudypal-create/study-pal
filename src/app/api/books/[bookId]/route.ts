@@ -12,6 +12,7 @@ const updateSchema = z.object({
   isPublished: z.boolean().optional(),
   quizBankId: z.string().uuid().nullable().optional(),
   previewPhraseLimit: z.number().int().min(0).max(100).optional(),
+  speechEnabled: z.boolean().optional(),
 });
 
 export async function GET(

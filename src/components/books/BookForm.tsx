@@ -18,6 +18,7 @@ export interface BookFormValues {
   isPublished: boolean;
   quizBankId: string;
   previewPhraseLimit: string;
+  speechEnabled: boolean;
 }
 
 export interface QuizBankOption {
@@ -41,6 +42,7 @@ export function BookForm({
   const [coverImageUrl, setCoverImageUrl] = useState(initial?.coverImageUrl ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
   const [isPublished, setIsPublished] = useState(initial?.isPublished ?? false);
+  const [speechEnabled, setSpeechEnabled] = useState(initial?.speechEnabled ?? true);
   const [quizBankId, setQuizBankId] = useState(initial?.quizBankId ?? "");
   const [previewPhraseLimit, setPreviewPhraseLimit] = useState(initial?.previewPhraseLimit ?? "5");
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +66,7 @@ export function BookForm({
         coverImageUrl: coverImageUrl.trim() || null,
         price: price ? Number(price) : undefined,
         isPublished,
+        speechEnabled,
         quizBankId: quizBankId || null,
         previewPhraseLimit: previewPhraseLimit ? Number(previewPhraseLimit) : 5,
       }),
@@ -182,6 +185,22 @@ export function BookForm({
           className="h-4 w-4 rounded border-input"
         />
         <Label htmlFor="isPublished">Published (visible in the store)</Label>
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <input
+            id="speechEnabled"
+            type="checkbox"
+            checked={speechEnabled}
+            onChange={(e) => setSpeechEnabled(e.target.checked)}
+            className="h-4 w-4 rounded border-input"
+          />
+          <Label htmlFor="speechEnabled">Read-aloud speaker icon (English phrases)</Label>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Lets readers tap a speaker icon to hear each English phrase spoken aloud, using their browser's built-in
+          voice. Applies to every chapter in this book.
+        </p>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 pt-2">

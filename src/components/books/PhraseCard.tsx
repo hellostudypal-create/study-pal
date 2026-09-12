@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Markdown } from "@/components/ui/Markdown";
+import { SpeakablePhrase } from "@/components/books/SpeakablePhrase";
 
 export interface PhraseCardData {
   id: string;
@@ -10,7 +11,15 @@ export interface PhraseCardData {
   explanationSi: string | null;
 }
 
-export function PhraseCard({ phrase, number }: { phrase: PhraseCardData; number?: number }) {
+export function PhraseCard({
+  phrase,
+  number,
+  speechEnabled = false,
+}: {
+  phrase: PhraseCardData;
+  number?: number;
+  speechEnabled?: boolean;
+}) {
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-5">
@@ -21,7 +30,11 @@ export function PhraseCard({ phrase, number }: { phrase: PhraseCardData; number?
             </span>
           )}
           <div className="min-w-0 flex-1 space-y-3">
-            <p className="text-lg font-bold leading-snug">{phrase.phrase}</p>
+            {speechEnabled ? (
+              <SpeakablePhrase text={phrase.phrase} className="text-lg font-bold leading-snug" />
+            ) : (
+              <p className="text-lg font-bold leading-snug">{phrase.phrase}</p>
+            )}
             {phrase.pronunciationSi && (
               <p className="font-sinhala text-sm italic text-muted-foreground">{phrase.pronunciationSi}</p>
             )}
