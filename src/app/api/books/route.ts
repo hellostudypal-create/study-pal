@@ -12,6 +12,7 @@ const createSchema = z.object({
   isPublished: z.boolean().default(false),
   quizBankId: z.string().uuid().nullable().optional(),
   previewPhraseLimit: z.number().int().min(0).max(100).default(5),
+  speechEnabled: z.boolean().default(true),
 });
 
 export async function GET() {

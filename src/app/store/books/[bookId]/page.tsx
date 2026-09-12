@@ -146,7 +146,12 @@ export default async function StoreBookPage({
             {chapter.isFreePreview && (
               <div className="space-y-3 pl-4">
                 {(previewByChapter.get(chapter.id)?.phrases ?? []).map((phrase, phraseIndex) => (
-                  <PhraseCard key={phrase.id} phrase={phrase} number={phraseIndex + 1} />
+                  <PhraseCard
+                    key={phrase.id}
+                    phrase={phrase}
+                    number={phraseIndex + 1}
+                    speechEnabled={book.speechEnabled}
+                  />
                 ))}
                 {(() => {
                   const preview = previewByChapter.get(chapter.id);
