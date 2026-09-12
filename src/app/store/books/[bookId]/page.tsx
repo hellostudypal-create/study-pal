@@ -36,11 +36,11 @@ export default async function StoreBookPage({
     previewChapters.map(async (chapter) => {
       const [phrases, totalCount] = await Promise.all([
         db.bookPhrase.findMany({
-          where: { chapterId: chapter.id },
+          where: { chapterId: chapter.id, isReviewed: true },
           orderBy: { order: "asc" },
           take: book.previewPhraseLimit,
         }),
-        db.bookPhrase.count({ where: { chapterId: chapter.id } }),
+        db.bookPhrase.count({ where: { chapterId: chapter.id, isReviewed: true } }),
       ]);
       return { chapterId: chapter.id, phrases, totalCount };
     })

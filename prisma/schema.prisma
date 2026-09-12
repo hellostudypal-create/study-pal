@@ -35,6 +35,7 @@ model User {
   grantedBookEntitlements BookEntitlement[]    @relation("BookGrantedBy")
   invitationTokens        InvitationToken[]
   passwordResetTokens     PasswordResetToken[]
+  reviewedBookPhrases     BookPhrase[]         @relation("BookPhraseReviewer")
 
   @@map("users")
 }
@@ -186,19 +187,24 @@ model BookChapter {
 }
 
 model BookPhrase {
-  id              String      @id @default(uuid())
-  chapterId       String      @map("chapter_id")
-  chapter         BookChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  phrase          String
-  translationSi   String?     @map("translation_si")
-  pronunciationSi String?     @map("pronunciation_si")
-  explanation     String
-  explanationSi   String?     @map("explanation_si")
-  order           Int         @default(0)
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  id               String      @id @default(uuid())
+  chapterId        String      @map("chapter_id")
+  chapter          BookChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  phrase           String
+  translationSi    String?     @map("translation_si")
+  pronunciationSi  String?     @map("pronunciation_si")
+  explanation      String
+  explanationSi    String?     @map("explanation_si")
+  order            Int         @default(0)
+  isReviewed       Boolean     @default(false) @map("is_reviewed")
+  reviewedAt       DateTime?   @map("reviewed_at")
+  reviewedByUserId String?     @map("reviewed_by_user_id")
+  reviewedBy       User?       @relation("BookPhraseReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
 
   @@index([chapterId, order])
+  @@index([chapterId, isReviewed])
   @@map("book_phrases")
 }
 

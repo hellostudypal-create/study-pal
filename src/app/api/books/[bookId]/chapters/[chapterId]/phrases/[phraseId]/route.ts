@@ -10,7 +10,12 @@ const updateSchema = z.object({
   explanation: z.string().min(1).max(4000).optional(),
   explanationSi: z.string().max(4000).nullable().optional(),
   order: z.number().int().optional(),
+  markReviewed: z.boolean().optional(),
 });
+
+const CONTENT_KEYS = ["phrase", "translationSi", "pronunciationSi", "explanation", "explanationSi"] as const;
+
+const reviewerSelect = { reviewedBy: { select: { displayName: true, email: true } } } as const;
 
 export async function PATCH(
   req: Request,
@@ -33,7 +38,32 @@ export async function PATCH(
     );
   }
 
-  const phrase = await db.bookPhrase.update({ where: { id: phraseId }, data: parsed.data });
+  const { markReviewed, ...content } = parsed.data;
+  const contentChanged = CONTENT_KEYS.some(
+    (key) => content[key] !== undefined && content[key] !== existing[key]
+  );
+
+  const data: typeof content & {
+    isReviewed?: boolean;
+    reviewedAt?: Date | null;
+    reviewedByUserId?: string | null;
+  } = { ...content };
+
+  if (markReviewed !== undefined) {
+    data.isReviewed = markReviewed;
+    data.reviewedAt = markReviewed ? new Date() : null;
+    data.reviewedByUserId = markReviewed ? session.user.id : null;
+  } else if (contentChanged) {
+    data.isReviewed = false;
+    data.reviewedAt = null;
+    data.reviewedByUserId = null;
+  }
+
+  const phrase = await db.bookPhrase.update({
+    where: { id: phraseId },
+    data,
+    include: reviewerSelect,
+  });
 
   return NextResponse.json({ phrase });
 }

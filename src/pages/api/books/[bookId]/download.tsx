@@ -130,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const chapters = await db.bookChapter.findMany({
     where: { bookId },
     orderBy: { order: "asc" },
-    include: { phrases: { orderBy: { order: "asc" } } },
+    include: { phrases: { where: { isReviewed: true }, orderBy: { order: "asc" } } },
   });
 
   const doc = (

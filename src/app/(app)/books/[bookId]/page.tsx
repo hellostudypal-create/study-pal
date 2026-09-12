@@ -36,12 +36,12 @@ export default async function BookReaderPage({
   const activeChapter = activeChapterIndex >= 0 ? chapters[activeChapterIndex] : chapters[0];
   const chapterNumber = (activeChapterIndex >= 0 ? activeChapterIndex : 0) + 1;
 
-  const totalPhrases = await db.bookPhrase.count({ where: { chapterId: activeChapter.id } });
+  const totalPhrases = await db.bookPhrase.count({ where: { chapterId: activeChapter.id, isReviewed: true } });
   const totalPages = Math.max(1, Math.ceil(totalPhrases / PHRASES_PER_PAGE));
   const page = Math.min(Math.max(1, Number(pageParam) || 1), totalPages);
 
   const phrases = await db.bookPhrase.findMany({
-    where: { chapterId: activeChapter.id },
+    where: { chapterId: activeChapter.id, isReviewed: true },
     orderBy: { order: "asc" },
     skip: (page - 1) * PHRASES_PER_PAGE,
     take: PHRASES_PER_PAGE,
