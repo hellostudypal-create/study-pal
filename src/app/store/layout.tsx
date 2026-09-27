@@ -49,6 +49,14 @@ export default async function StoreLayout({
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8">{children}</main>
+      <footer className="mx-auto flex max-w-7xl gap-4 px-4 pb-8 text-xs text-muted-foreground sm:px-8">
+        <Link href="/terms" className="hover:text-foreground hover:underline">
+          Terms of Service
+        </Link>
+        <Link href="/privacy" className="hover:text-foreground hover:underline">
+          Privacy Policy
+        </Link>
+      </footer>
     </div>
   );
 }

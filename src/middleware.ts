@@ -14,7 +14,9 @@ export default auth((req) => {
     isAuthPage ||
     pathname === "/" ||
     pathname.startsWith("/store") ||
-    pathname === "/accept-invitation";
+    pathname === "/accept-invitation" ||
+    pathname === "/privacy" ||
+    pathname === "/terms";
 
   if (!isLoggedIn && !isPublic) {
     const loginUrl = new URL("/login", req.nextUrl.origin);

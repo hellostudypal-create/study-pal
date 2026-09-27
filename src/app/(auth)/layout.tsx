@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LogoBadge } from "@/components/brand/Logo";
 
 export default function AuthLayout({
@@ -13,6 +14,14 @@ export default function AuthLayout({
           <h1 className="text-2xl font-extrabold tracking-tight">Study Pal</h1>
         </div>
         {children}
+        <div className="mt-8 flex justify-center gap-4 text-xs text-muted-foreground">
+          <Link href="/terms" className="hover:text-foreground hover:underline">
+            Terms of Service
+          </Link>
+          <Link href="/privacy" className="hover:text-foreground hover:underline">
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </div>
   );
