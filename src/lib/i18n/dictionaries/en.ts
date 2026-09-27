@@ -309,6 +309,12 @@ export const en = {
     next: "Next",
     pageOf: "Page {page} of {total}",
   },
+  notFound: {
+    title: "Page not found",
+    body: "The page you're looking for doesn't exist or may have moved. Let's get you back to studying.",
+    goToDashboard: "Go to dashboard",
+    browseStore: "Browse the store",
+  },
 } as const;
 
 type DeepStringMap<T> = { [K in keyof T]: T[K] extends string ? string : DeepStringMap<T[K]> };

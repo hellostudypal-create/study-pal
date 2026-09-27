@@ -315,4 +315,10 @@ export const si: Dictionary = {
     next: "ඊළඟ",
     pageOf: "පිටුව {page} / {total}",
   },
+  notFound: {
+    title: "පිටුව හමු නොවීය",
+    body: "ඔබ සොයන පිටුව නොපවතී, නැතහොත් වෙනත් තැනකට ගෙන ගොස් ඇත. නැවත ඉගෙනීමට යමු.",
+    goToDashboard: "පුවරුවට යන්න",
+    browseStore: "වෙළඳසැල බලන්න",
+  },
 };
